@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "LightAPRS")(type "KiCad")(uri "${KIPRJMOD}/Components/LightAPRS/LightAPRS.kicad_sym")(options "")(descr ""))
+)

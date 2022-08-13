@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/Components/LightAPRS/Library.pretty")(options "")(descr ""))
+  (lib (name "LightAPRS")(type "KiCad")(uri "${KIPRJMOD}/Components/LightAPRS/LightAPRS.pretty")(options "")(descr ""))
+)

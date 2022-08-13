@@ -1,0 +1,123 @@
+(footprint "LightAPRS" (version 20211014) (generator pcbnew)
+  (layer "F.Cu")
+  (tedit 0)
+  (attr through_hole)
+  (fp_text reference "REF**" (at 2.54 30.48 unlocked) (layer "F.SilkS")
+    (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp c1415ec4-6059-4e85-bf56-1ddc87a2ece1)
+  )
+  (fp_text value "LightAPRS" (at 2.54 35.56 unlocked) (layer "F.Fab")
+    (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp 44c699aa-705a-4f91-a503-5938eb3527ab)
+  )
+  (fp_text user "${REFERENCE}" (at 2.54 40.64 unlocked) (layer "F.Fab")
+    (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp 569975c3-bdd0-413c-b42c-af76f78a5627)
+  )
+  (fp_line (start 17.2165 12.729) (end 7 12.729) (layer "Edge.Cuts") (width 0.2) (tstamp 198e537f-8d96-4b00-9278-69265015b84f))
+  (fp_line (start -9.972626 12.229) (end -9.972626 12.729) (layer "Edge.Cuts") (width 0.2) (tstamp 2db13fe9-681b-478f-91a8-19019ba6a0cd))
+  (fp_line (start -13.858936 15.2335) (end -13.858936 59.273792) (layer "Edge.Cuts") (width 0.2) (tstamp 323f3184-e82e-4c60-aaa5-9cc8a72c3b53))
+  (fp_line (start -9.972626 12.729) (end -11.355201 12.729) (layer "Edge.Cuts") (width 0.2) (tstamp 472df021-683c-429c-abc5-baa9e17679e8))
+  (fp_line (start 19.721 59.414198) (end 19.721 15.2335) (layer "Edge.Cuts") (width 0.2) (tstamp 4ffb1a66-6378-41b4-9c53-9da85d52e869))
+  (fp_line (start -11.214026 61.918702) (end 17.2165 61.918702) (layer "Edge.Cuts") (width 0.2) (tstamp 71ad9794-3cd4-40da-bdcb-8983b6061e5d))
+  (fp_line (start -1 12.729) (end -7.279374 12.729) (layer "Edge.Cuts") (width 0.2) (tstamp 7fc75727-db32-4b5d-95d2-d07340321d8b))
+  (fp_line (start 4.5 -1.5) (end 1.5 -1.5) (layer "Edge.Cuts") (width 0.2) (tstamp 98c7fd88-cfcd-48b7-a888-4e810ede2157))
+  (fp_line (start 6 11.729) (end 6 0) (layer "Edge.Cuts") (width 0.2) (tstamp 98e39d21-53e1-4bb6-a70d-c33268eb1ee7))
+  (fp_line (start -7.279374 12.729) (end -7.279374 12.229) (layer "Edge.Cuts") (width 0.2) (tstamp a06f38ff-9a56-452d-a9e3-26b6efcb26d4))
+  (fp_line (start 0 0) (end 0 11.729) (layer "Edge.Cuts") (width 0.2) (tstamp d2174570-1460-458d-99fd-db83db3604be))
+  (fp_arc (start 17.2165 12.729) (mid 18.987449 13.462551) (end 19.721 15.2335) (layer "Edge.Cuts") (width 0.2) (tstamp 24360244-0312-43fa-bc1d-2964909d8952))
+  (fp_arc (start -11.214026 61.918702) (mid -13.08426 61.144026) (end -13.858936 59.273792) (layer "Edge.Cuts") (width 0.2) (tstamp 29bc5a7d-cb8b-442f-8a3c-1fe938cf4f6c))
+  (fp_arc (start 4.5 -1.5) (mid 5.56066 -1.06066) (end 6 0) (layer "Edge.Cuts") (width 0.2) (tstamp 68476f6d-636b-4d2e-8dd7-f17cf58fcb99))
+  (fp_arc (start 7 12.729) (mid 6.292893 12.436107) (end 6 11.729) (layer "Edge.Cuts") (width 0.2) (tstamp 6a0c9b6c-5a48-48a5-aa94-2fc4b82a437a))
+  (fp_arc (start 0 0) (mid 0.43934 -1.06066) (end 1.5 -1.5) (layer "Edge.Cuts") (width 0.2) (tstamp 80eaf8ef-6b5b-410c-85e7-cd20c2b31968))
+  (fp_arc (start -13.858936 15.2335) (mid -13.125655 13.462821) (end -11.355201 12.729) (layer "Edge.Cuts") (width 0.2) (tstamp ad7a0116-8c7e-48ef-8bf9-058f22b4d58c))
+  (fp_arc (start 19.721 59.414198) (mid 18.987451 61.18515) (end 17.2165 61.918702) (layer "Edge.Cuts") (width 0.2) (tstamp bd065221-a1ff-4aff-b229-6b5f500a027d))
+  (fp_arc (start 0 11.729) (mid -0.292893 12.436107) (end -1 12.729) (layer "Edge.Cuts") (width 0.2) (tstamp d1f17997-cff3-4af2-a7ed-b69e95d2f751))
+  (fp_arc (start -9.972626 12.229) (mid -8.626 10.882374) (end -7.279374 12.229) (layer "Edge.Cuts") (width 0.2) (tstamp e526a58c-fe3e-482a-a773-28448e8f0008))
+  (fp_circle (center -11.354436 15.2335) (end -12.522936 15.2335) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 02f6a283-56e8-4cc4-96bd-be8010d7beb9))
+  (fp_circle (center 17.521 41.319702) (end 17.021 41.319702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 03a911d2-2c6a-40cb-a587-1ddacf4a760a))
+  (fp_circle (center 17.532 18.739) (end 17.032 18.739) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 1d8363b1-3c22-4616-87f9-42cc00365923))
+  (fp_circle (center 11.157 59.729702) (end 10.657 59.729702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 24bf04ed-918f-48b7-a12a-a67eedefb52d))
+  (fp_circle (center -12.212936 47.628702) (end -12.712936 47.628702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 2b881a10-9f69-4302-bae0-938ae4791c2b))
+  (fp_circle (center 17.521 26.049702) (end 17.021 26.049702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 2bd07db5-0668-4a5b-9460-dba739ba7cb4))
+  (fp_circle (center 17.521 38.774702) (end 17.021 38.774702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 2bd403a7-cda8-45a9-bfa2-ff43280291d1))
+  (fp_circle (center 16.795 59.729702) (end 16.295 59.729702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 39141eb6-8086-478a-b449-2f94bfaca438))
+  (fp_circle (center 17.521 33.684702) (end 17.021 33.684702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 3f25acc1-ee70-4518-9959-332f2a3fb02d))
+  (fp_circle (center -7.973526 59.729702) (end -8.473526 59.729702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 69ea1327-3f65-40ca-a008-011ecf7bba74))
+  (fp_circle (center -11.669936 18.739) (end -12.169936 18.739) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 6e26d4e2-e4fa-4017-bd6f-0cb2b3339750))
+  (fp_circle (center 17.521 31.139702) (end 17.021 31.139702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 75cdbae6-18fe-4961-bf80-d62a0975e56b))
+  (fp_circle (center -8.626 12.229) (end -9.126 12.229) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 81b02b6f-dca4-45b4-b271-18bb9caf6767))
+  (fp_circle (center 13.976 59.729702) (end 13.476 59.729702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 93ea46e5-c6b0-49ed-9eed-872c47f4141a))
+  (fp_circle (center -10.792526 59.729702) (end -11.292526 59.729702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp 9cc31af5-06ed-4740-b96a-54f26937f7b8))
+  (fp_circle (center -12.212936 54.608702) (end -12.712936 54.608702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp ba1e1314-09ec-4431-8979-8222a9adc455))
+  (fp_circle (center 17.532 21.533) (end 17.032 21.533) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp c742d5ec-7811-46d5-83c4-ccbf9d3b0867))
+  (fp_circle (center -9.510936 53.617702) (end -10.010936 53.617702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp db28ce68-571b-4bb1-988d-6722075bca77))
+  (fp_circle (center 17.2165 15.2335) (end 16.048 15.2335) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp db4b7069-ac71-4680-89e7-1ee0f7ed32d0))
+  (fp_circle (center -9.510936 48.623702) (end -10.010936 48.623702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp dc0686f6-f260-43f8-a4aa-6a3c2894abfd))
+  (fp_circle (center 17.521 28.594702) (end 17.021 28.594702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp f01f85f3-9d81-4dc8-9b23-5680745c8cbb))
+  (fp_circle (center -5.154526 59.729702) (end -5.654526 59.729702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp f22acbeb-b139-4ce9-9003-67ab18f15c08))
+  (fp_circle (center -11.669936 21.533) (end -12.169936 21.533) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp fc9910ed-8489-43b4-86a6-05fab0f1342c))
+  (fp_circle (center 17.521 36.229702) (end 17.021 36.229702) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp fd464b34-039c-4cb5-8fb9-0816d317a295))
+  (pad "1" thru_hole circle (at -11.65 21.66) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 7263b375-a592-48ec-931b-7a9d8cadff05))
+  (pad "2" thru_hole circle (at -11.69 18.65) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp c5850e50-c170-4202-b4c8-7680b777af84))
+  (pad "3" thru_hole circle (at -8.6 12.16) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 20fd9b06-eb40-415f-8c30-2eda2946a751))
+  (pad "4" thru_hole circle (at 17.55 18.73) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 862a051e-4cbc-4ae3-8617-41c8d82c1bf0))
+  (pad "5" thru_hole circle (at 17.55 21.5) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 7c5d955b-5cb0-4509-9168-80b5fa214f07))
+  (pad "6" thru_hole circle (at 17.51 26.05) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp fb39ed4f-db2b-4217-868d-e4242d37e91e))
+  (pad "7" thru_hole circle (at 17.51 28.58) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 8d93e75a-5234-4125-bc1c-48af04f96b56))
+  (pad "8" thru_hole circle (at 17.51 31.15) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 2d0c7959-8528-4ca5-9757-77363e537aee))
+  (pad "9" thru_hole circle (at 17.51 33.72) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 43b2d16e-6ed3-4ce6-8194-3e5cb8576b00))
+  (pad "10" thru_hole circle (at 17.55 36.17) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 177aa295-d70a-4477-9849-7c7468d427b0))
+  (pad "11" thru_hole circle (at 17.51 38.74) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 2f2762bc-7a37-4f95-b5a7-fa2ac840252b))
+  (pad "12" thru_hole circle (at 17.55 41.51) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 2d9bdfb2-7143-423c-8459-49f2edecafd7))
+  (pad "13" thru_hole circle (at 13.95 59.87) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp e8c1e600-736c-451b-8fae-331ce5833644))
+  (pad "14" thru_hole circle (at -7.89 59.75) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask) (tstamp 893bda5f-e593-4d77-becc-9335e7e8f03e))
+  (group "" (id c03c3069-5889-4f3f-9a71-2c77dc4a0c2c)
+    (members
+      02f6a283-56e8-4cc4-96bd-be8010d7beb9
+      03a911d2-2c6a-40cb-a587-1ddacf4a760a
+      198e537f-8d96-4b00-9278-69265015b84f
+      1d8363b1-3c22-4616-87f9-42cc00365923
+      24360244-0312-43fa-bc1d-2964909d8952
+      24bf04ed-918f-48b7-a12a-a67eedefb52d
+      29bc5a7d-cb8b-442f-8a3c-1fe938cf4f6c
+      2b881a10-9f69-4302-bae0-938ae4791c2b
+      2bd07db5-0668-4a5b-9460-dba739ba7cb4
+      2bd403a7-cda8-45a9-bfa2-ff43280291d1
+      2db13fe9-681b-478f-91a8-19019ba6a0cd
+      323f3184-e82e-4c60-aaa5-9cc8a72c3b53
+      39141eb6-8086-478a-b449-2f94bfaca438
+      3f25acc1-ee70-4518-9959-332f2a3fb02d
+      472df021-683c-429c-abc5-baa9e17679e8
+      4ffb1a66-6378-41b4-9c53-9da85d52e869
+      68476f6d-636b-4d2e-8dd7-f17cf58fcb99
+      69ea1327-3f65-40ca-a008-011ecf7bba74
+      6a0c9b6c-5a48-48a5-aa94-2fc4b82a437a
+      6e26d4e2-e4fa-4017-bd6f-0cb2b3339750
+      71ad9794-3cd4-40da-bdcb-8983b6061e5d
+      75cdbae6-18fe-4961-bf80-d62a0975e56b
+      7fc75727-db32-4b5d-95d2-d07340321d8b
+      80eaf8ef-6b5b-410c-85e7-cd20c2b31968
+      81b02b6f-dca4-45b4-b271-18bb9caf6767
+      93ea46e5-c6b0-49ed-9eed-872c47f4141a
+      98c7fd88-cfcd-48b7-a888-4e810ede2157
+      98e39d21-53e1-4bb6-a70d-c33268eb1ee7
+      9cc31af5-06ed-4740-b96a-54f26937f7b8
+      a06f38ff-9a56-452d-a9e3-26b6efcb26d4
+      ad7a0116-8c7e-48ef-8bf9-058f22b4d58c
+      ba1e1314-09ec-4431-8979-8222a9adc455
+      bd065221-a1ff-4aff-b229-6b5f500a027d
+      c742d5ec-7811-46d5-83c4-ccbf9d3b0867
+      d1f17997-cff3-4af2-a7ed-b69e95d2f751
+      d2174570-1460-458d-99fd-db83db3604be
+      db28ce68-571b-4bb1-988d-6722075bca77
+      db4b7069-ac71-4680-89e7-1ee0f7ed32d0
+      dc0686f6-f260-43f8-a4aa-6a3c2894abfd
+      e526a58c-fe3e-482a-a773-28448e8f0008
+      f01f85f3-9d81-4dc8-9b23-5680745c8cbb
+      f22acbeb-b139-4ce9-9003-67ab18f15c08
+      fc9910ed-8489-43b4-86a6-05fab0f1342c
+      fd464b34-039c-4cb5-8fb9-0816d317a295
+    )
+  )
+)
