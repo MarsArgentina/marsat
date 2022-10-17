@@ -241,3 +241,38 @@ esp_err_t xtend_modem_commands(const char *commandToSend, const char *commandRes
     }
 
 }
+
+esp_err_t modem_get_rssi(char *respuesta){
+
+    char buffer[100];
+    xtend_modem_uart_msg_t respuesta_recibida;
+    //primero mando "+++" y espero el "OK" como respuesta
+
+    strcpy(buffer,"+++\r");
+    uart_write_bytes(UART_NUM_1, buffer,strlen(buffer)); 
+    if (xQueueReceive(modem_responses_queue, &respuesta_recibida,pdMS_TO_TICKS(500)) == pdTRUE)
+    {
+
+            ESP_LOGI(TAG,"Modo comando, espuesta: %s ", respuesta_recibida.in_data);
+
+            if(strstr( respuesta_recibida.in_data, "OK") != NULL){ //está en modo comandos
+                strcpy(buffer,"ATDB\r");
+                uart_write_bytes(UART_NUM_1, buffer,strlen(buffer)); 
+                if (xQueueReceive(modem_responses_queue, &respuesta_recibida,pdMS_TO_TICKS(1000)) == pdTRUE){
+
+                    ESP_LOGI(TAG,"Comando ATDB respuesta: %s ", respuesta_recibida.in_data);
+                    memcpy(respuesta,respuesta_recibida.in_data,strlen(respuesta_recibida.in_data));
+                    // salgo del modo comandos
+                    strcpy(buffer,"ATCN\r");
+                    uart_write_bytes(UART_NUM_1, buffer,strlen(buffer)); 
+                    return ESP_OK;
+                }
+                else{
+                    return ESP_ERR_TIMEOUT;
+                }
+            }
+            else{
+                return ESP_FAIL;
+            }
+    }
+}

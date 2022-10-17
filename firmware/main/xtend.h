@@ -12,5 +12,6 @@ esp_err_t modem_prepare(char *apn_de_chip);
 
 void xtend_modem(void *pvParameters);
 
+esp_err_t modem_get_rssi(char *respuesta);
 
 #endif
