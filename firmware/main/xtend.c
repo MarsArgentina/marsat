@@ -163,8 +163,6 @@ void xtend_modem(void *pvParameters)
                 ESP_LOGI(TAG,"Intensidad de señal: %s",modemResponse);
 
                 uart_write_bytes(UART_NUM_1, "ATCN\r",strlen(ATCN\r)); //lo saco del modo comandos
-
-               
                 modemState = 2;
                 break;
             }
@@ -173,7 +171,7 @@ void xtend_modem(void *pvParameters)
                 xtend_modem_uart_msg_t respuesta_recibida;
                 if (xQueueReceive(modem_responses_queue, &respuesta_recibida,portMAX_DELAY) == pdTRUE)
                 {
-                   ESP_LOGI(TAG,"Mensaje recibido: %s", respuesta_recibida.in_data); 
+                    ESP_LOGI(TAG,"Mensaje recibido: %s", respuesta_recibida.in_data); 
                 }
                 break;
             }
