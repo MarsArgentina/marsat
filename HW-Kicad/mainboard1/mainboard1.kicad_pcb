@@ -10746,6 +10746,12 @@
   (gr_circle (center 213.115 49.575) (end 214.615 49.575) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp d2483457-a993-47f0-9cd4-8572e9283464))
   (gr_line (start 214.24 140.7) (end 119.24 140.7) (layer "Edge.Cuts") (width 0.2) (tstamp f68bfa4c-042a-4767-b3ba-e95778744887))
   (gr_circle (center 207.365 43.825) (end 208.865 43.825) (layer "Edge.Cuts") (width 0.2) (fill none) (tstamp f7c720a0-341b-4f8b-a4ef-486f29d8d30a))
+  (gr_text "10v\nRx\nTx\nGND" (at 192.7 47.2) (layer "B.SilkS") (tstamp 47284765-4e83-4e5c-a8ba-e169ef7b8410)
+    (effects (font (size 2 2) (thickness 0.15)) (justify mirror))
+  )
+  (gr_text "GND\nTX\nRX\n10V" (at 142.4 47.6) (layer "B.SilkS") (tstamp aba97161-af06-4454-8bad-041721850621)
+    (effects (font (size 2 2) (thickness 0.15)) (justify mirror))
+  )
 
   (segment (start 170.7 65.1) (end 165.874 60.274) (width 0.8) (layer "F.Cu") (net 1) (tstamp 0c860d9d-0ed2-44bc-9a80-bdc322ce2ebb))
   (segment (start 191.1 65.1) (end 170.7 65.1) (width 0.8) (layer "F.Cu") (net 1) (tstamp 931f97a2-b417-4af5-bd33-822481601544))
