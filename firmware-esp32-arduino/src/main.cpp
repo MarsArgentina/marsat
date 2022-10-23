@@ -3,15 +3,6 @@
 #include <Preferences.h>
 #include <TinyGPS++.h>
 
-/*
- * There are three serial ports on the ESP known as U0UXD, U1UXD and U2UXD.
- * 
- * U0UXD is used to communicate with the ESP32 for programming and during reset/boot.
- * U1UXD is unused and can be used for your projects. Some boards use this port for SPI Flash access though
- * U2UXD is unused and can be used for your projects.
- * 
-*/
-
 //9xtend
 #define xtendRX 1
 #define xtendTx 3
@@ -31,6 +22,7 @@
 
 //gpio
 #define ballonGate 24
+//TODO: definir pines de control de energía de payload
 
 //Inicializaciones
 
@@ -44,64 +36,138 @@ int alturaParacaidas; //altura desde la cual desplegaremos el paracaídas en KM
 
 int estadoVuelo = 0; //0: ascendiendo, 1:descendiendo, 2: aterrizado 
 
-//--------------------------------------------------------------
-// Size of the geo fence (in meters)
-const float maxDistance = 20;
+String serial0data, serial1data, serial2data;
 
-//--------------------------------------------------------------
+int distanciaMaxima;
+float distanciaVuelo;
 float latitudInicial;
 float longitudInicial;
-
 float latitud, longitud;
 int altura;
 
-void getGps(float& latitud, float& longitud, int& altura);
-float getDistance(float flat1, float flon1, float flat2, float flon2);
+//temporizadores
 
+uint32_t lastKAtime = 0;
+
+//funciones propias
+void getGps(float& latitud, float& longitud, int& altura);//por i2c le pide al APRS las coordenadas del gps
+float getDistance(float flat1, float flon1, float flat2, float flon2);//calcula la distancia del gps respecto a las cooredenadas actuales
+void checkUart(void);//reivsa los puertos uart 
+String getDB(void);//pregunta al módulo de comunicaciones los dbs de recepcción
 
 void setup() {
-
+  //comms
   Serial.begin(9600,SERIAL_8N1, xtendRX, xtendTx);
-
-  // Note the format for setting a serial port is as follows: Serial2.begin(baud-rate, protocol, RX pin, TX pin);
   Serial1.begin(9600, SERIAL_8N1, payload1Rx, payload1Tx);
   Serial2.begin(9600, SERIAL_8N1, payload2Rx, payload2Tx);
-
   Wire.begin(aprsSDA, aprsSCL);
-
+  //pines
   pinMode(ballonGate, OUTPUT);
-
   //busco en memoria los datos relevantes al control del vuelo
   memoria.begin("vuelo",false);
-
   alturaParacaidas = memoria.getInt("alturaParacaida",10);
   estadoVuelo = memoria.getInt("estadoVuelo",0);
   latitudInicial = memoria.getFloat("latitud",0);
   longitudInicial = memoria.getFloat("longitud",0);
-  //cierro la memoria
+  distanciaMaxima - memoria.getInt("maxdist",0);
   memoria.end();
-
 }
 
 
 void loop() { 
+  switch (estadoVuelo)
+  {
+  case 0:{
+    checkUart();
 
-  String serial0data, serial1data, serial3data;
+    getGps(latitud, longitud, altura);
+    distanciaVuelo = getDistance(latitud, longitud, latitudInicial, longitudInicial);
+    if(distanciaVuelo > distanciaMaxima){
+      Serial.write("Distancia excedida, terminando vuelo");
+      //TODO: explotar globo
+      estadoVuelo = 1;
+      memoria.begin("vuelo",false);
+      memoria.putInt("estadoVuelo",1);
+      memoria.end();
 
-  if(Serial.available()){
+      break;
+    }
+
+    break;
+  }
+  
+  case 1: {
+    //en este estado apagamos el payload
+
+    break;
+  }
+  
+  case 2: {
+
+  }
+  default:
+    break;
+  }
+}
+
+/**
+ * @brief Función que verifica los puertos uart
+ * Contesta el keep-alive de la estación terrena y también reenvia lo que tengan para reportar los payloads
+ * 
+ */
+void checkUart(void){
+  String respuesta;
+  if( Serial.available() ){
+    lastKAtime = millis();
     serial0data = Serial.readString();
-    Serial1.write(serial0data.c_str());
+    if( serial0data == "ka" ){//mensaje de keep-alive
+      respuesta = getDB();
+      respuesta = respuesta + "";//TODO: agregar coordenadas de gps
+      Serial.write(respuesta.c_str());
+    }
+    else if( serial0data == "abort" ){
+      //TODO: romper el globo
+      //TODO: poner firmware en modo caída
+      Serial.write("abortACK");
+    }
+    else if( serial0data == "comando" ){//TODO: definir prefijo de comando payload
+      //TODO: reenviar comando a payload
+    }
   }
 
-  // while (Serial2.available()) {
-  //   Serial.print(char(Serial2.read()));
-  // }
+  if( Serial1.available() ){
+    serial1data = Serial.readString();
+    Serial.write(serial1data.c_str());
+  }
 
-  //--------------------------------------------------------------
-  getGps(latitud, longitud, altura);
-  //--------------------------------------------------------------
-  float distance = getDistance(latitud, longitud, initiallatitud, initiallongitud);
+  if( Serial2.available() ){
+    serial2data = Serial2.readString();
+    Serial.write(serial2data.c_str());
+  }
+
 }
+
+/**
+ * @brief Función que le pide el módulo 9XTEND sus db's de recepción
+ * 
+ * @return String la respuesta del módulo 9xtend en dbs
+ */
+String getDB(void){
+
+  static String respuestaXtend;
+  Serial.write("+++\r");//entro en modo comandos
+  while (Serial.available() == 0){//espera que llegue la respuesta
+  }
+  respuestaXtend = Serial.readString();
+  Serial.write("ATDB\r");//pregunto los db
+  while (Serial.available() == 0){//espera que llegue la respuesta
+  }
+  respuestaXtend = Serial.readString();
+  Serial.write("ATCN\r");//salgo de modo comandos
+  return respuestaXtend;//devuelvo la respuesta de los db
+
+}
+
 
 /**
  * @brief Obtener los datos de GPS desde el I2C. Obtiene como chars o strings y parsea a float
@@ -116,11 +182,8 @@ void getGps(float& latitud, float& longitud, int& altura)
   //estandarizar comunicación con aprs
   Wire.requestFrom(8, 6);    // request 6 bytes from peripheral device #8
   while (Wire.available()) { // peripheral may send less than requested
-    
     char c = Wire.read(); // receive a byte as character
-
     Serial.print(c);         // print the character
-
   }
 
 }
