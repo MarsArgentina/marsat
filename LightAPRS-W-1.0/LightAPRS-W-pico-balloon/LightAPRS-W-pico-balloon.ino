@@ -11,6 +11,7 @@
 #include <JTEncode.h>        //https://github.com/etherkit/JTEncode (JT65/JT9/JT4/FT8/WSPR/FSQ Encoder Library)
 #include <TimeLib.h>         //https://github.com/PaulStoffregen/Time
 #include <TimerThree.h>      //https://github.com/PaulStoffregen/TimerThree/
+#include <SoftwareSerial.h>  //https://www.arduino.cc/en/Reference/softwareSerial
 
 #define RfPDPin 19
 #define GpsVccPin 18
@@ -47,16 +48,17 @@
   pinMode(14, OUTPUT); \
   pinMode(15, OUTPUT)
 
-// #define DEVMODE // Development mode. Uncomment to enable for debugging.
+#define DEVMODE // Development mode. Uncomment to enable for debugging.
+// #define WSPR // Uncomment to enable WSPR
 
 //******************************  APRS CONFIG **********************************
-char CallSign[7] = "NOCALL";       // DO NOT FORGET TO CHANGE YOUR CALLSIGN
+char CallSign[7] = "LU1MUM";       // DO NOT FORGET TO CHANGE YOUR CALLSIGN
 int8_t CallNumber = 11;            // SSID http://www.aprs.org/aprs11/SSIDs.txt
 char Symbol = 'O';                 // '/O' for balloon, '/>' for car, for more info : http://www.aprs.org/symbols/symbols-new.txt
 bool alternateSymbolTable = false; // false = '/' , true = '\'
 
-char comment[50] = "http://www.lightaprs.com"; // Max 50 char
-char StatusMessage[50] = "LightAPRS-W by TA2NHP & TA2MUN";
+char comment[] = "Esto es una prueba - TMSA ar"; // Max 50 char
+char StatusMessage[] = "Esto es una prueba - TMSA ar";
 //*****************************************************************************
 
 uint16_t BeaconWait = 50; // seconds sleep for next beacon (HF or VHF). This is optimized value, do not change this if possible.
@@ -68,7 +70,7 @@ float WsprBattMin = 4.5;  // min Volts for HF mradio module to transmit (TX) ~10
 
 //******************************  HF CONFIG *************************************
 
-char hf_call[7] = "NOCALL"; // DO NOT FORGET TO CHANGE YOUR CALLSIGN
+char hf_call[7] = "LU1MUM"; // DO NOT FORGET TO CHANGE YOUR CALLSIGN
 
 // #define WSPR_DEFAULT_FREQ       10140200UL //30m band
 #define WSPR_DEFAULT_FREQ 14097100UL // 20m band
@@ -185,6 +187,7 @@ Si5351 si5351(0x60);
 TinyGPSPlus gps;
 Adafruit_BMP085 bmp;
 JTEncode jtencode;
+SoftwareSerial esp32(5, 6); // RX, TX
 
 void setup()
 {
@@ -207,6 +210,7 @@ void setup()
 
   Serial.begin(57600); // Arduino serial
   Serial1.begin(9600); // GPS serial
+  esp32.begin(9600);   // ESP32 serial
 #if defined(DEVMODE)
   Serial.println(F("Start"));
 #endif
@@ -277,6 +281,7 @@ void loop()
         GpsOFF;
         GpsFirstFix = true;
         ublox_high_alt_mode_enabled = false; // gps sleep mode resets high altitude mode.
+#if defined(WSPR)
 #if defined(DEVMODE)
         Serial.println(F("Before WSPR Check"));
 #endif
@@ -309,7 +314,7 @@ void loop()
         }
         else
         {
-
+#endif
           updateTelemetry();
           // APRS frequency isn't the same for the whole world. (for pico balloon only)
           if (!radioSetup || TxCount == 200)
@@ -345,7 +350,9 @@ void loop()
           {
             sleepSeconds(BeaconWait);
           }
+#if defined(WSPR)
         }
+#endif
       }
       else
       {
@@ -712,6 +719,8 @@ static void updateGpsData(int ms)
     if (bekle != 0 && bekle + 10 < millis())
       break;
   } while (millis() - start < ms);
+
+  esp32.printf("%f,%f,%f\r", gps.location.lat(), gps.location.lng(), gps.altitude.meters());
 }
 
 float readBatt()
