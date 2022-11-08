@@ -11,7 +11,17 @@
 #include <JTEncode.h>        //https://github.com/etherkit/JTEncode (JT65/JT9/JT4/FT8/WSPR/FSQ Encoder Library)
 #include <TimeLib.h>         //https://github.com/PaulStoffregen/Time
 #include <TimerThree.h>      //https://github.com/PaulStoffregen/TimerThree/
-#include <SoftwareSerial.h>  //https://www.arduino.cc/en/Reference/softwareSerial
+// #include <SoftwareSerial.h>  //https://www.arduino.cc/en/Reference/softwareSerial
+
+#define ESP32_ADDR 0x04
+
+typedef union
+{
+  float number;
+  uint8_t bytes[4];
+} floatunion_t;
+
+floatunion_t latt, lon, alt, temp_int, temp_ext, pres;
 
 #define RfPDPin 19
 #define GpsVccPin 18
@@ -187,7 +197,7 @@ Si5351 si5351(0x60);
 TinyGPSPlus gps;
 Adafruit_BMP085 bmp;
 JTEncode jtencode;
-SoftwareSerial esp32(5, 6); // RX, TX
+// SoftwareSerial esp32(5, 6); // RX, TX
 
 void setup()
 {
@@ -210,7 +220,7 @@ void setup()
 
   Serial.begin(57600); // Arduino serial
   Serial1.begin(9600); // GPS serial
-  esp32.begin(9600);   // ESP32 serial
+  // esp32.begin(9600);   // ESP32 serial
 #if defined(DEVMODE)
   Serial.println(F("Start"));
 #endif
@@ -606,6 +616,9 @@ void updateTelemetry()
 #if defined(DEVMODE)
   Serial.println(telemetry_buff);
 #endif
+  temp_int.number = tempC;
+  pres.number = pressure;
+  send_sens_i2c();
 }
 
 void sendLocation()
@@ -720,7 +733,11 @@ static void updateGpsData(int ms)
       break;
   } while (millis() - start < ms);
 
-  esp32.printf("%f,%f,%f\r", gps.location.lat(), gps.location.lng(), gps.altitude.meters());
+  // esp32.printf("%f,%f,%f\r", gps.location.lat(), gps.location.lng(), gps.altitude.meters());
+  latt.number = gps.location.lat();
+  lon.number = gps.location.lng();
+  alt.number = gps.altitude.meters();
+  send_coord_i2c();
 }
 
 float readBatt()
@@ -1095,4 +1112,41 @@ boolean getUBX_ACK(uint8_t *MSG)
       }
     }
   }
+}
+
+void send_coord_i2c()
+{
+  Wire.beginTransmission(ESP32_ADDR);
+  Wire.write(0x01);
+  for (int i = 0; i < 4; i++)
+  {
+    Wire.write(latt.bytes[i]);
+  }
+  for (int i = 0; i < 4; i++)
+  {
+    Wire.write(lon.bytes[i]);
+  }
+  for (int i = 0; i < 4; i++)
+  {
+    Wire.write(alt.bytes[i]);
+  }
+  Wire.endTransmission();
+}
+
+void send_sens_i2c()
+{
+  Wire.beginTransmission(ESP32_ADDR);
+  for (int i = 0; i < 4; i++)
+  {
+    Wire.write(temp_int.bytes[i]);
+  }
+  for (int i = 0; i < 4; i++)
+  {
+    Wire.write(temp_ext.bytes[i]);
+  }
+  for (int i = 0; i < 4; i++)
+  {
+    Wire.write(pres.bytes[i]);
+  }
+  Wire.endTransmission();
 }
