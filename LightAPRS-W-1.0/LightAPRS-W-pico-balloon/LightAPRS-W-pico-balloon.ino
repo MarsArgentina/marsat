@@ -12,8 +12,11 @@
 #include <TimeLib.h>         //https://github.com/PaulStoffregen/Time
 #include <TimerThree.h>      //https://github.com/PaulStoffregen/TimerThree/
 // #include <SoftwareSerial.h>  //https://www.arduino.cc/en/Reference/softwareSerial
+#include <OneWire.h>        //https://github.com/PaulStoffregen/OneWire
+#include <DallasTemperature.h>    //https://github.com/milesburton/Arduino-Temperature-Control-Library
 
 #define ESP32_ADDR 0x04
+#define DS18B20_PIN 7
 
 typedef union
 {
@@ -138,7 +141,7 @@ boolean send_aprs_enhanced_precision = true;
 boolean radioSetup = false;
 boolean aliveStatus = true; // for tx status message on first wake-up just once.
 
-static char telemetry_buff[100]; // telemetry buffer
+static char telemetry_buff[255]; // telemetry buffer
 uint16_t TxCount = 1;            // increase +1 after every APRS transmission
 
 //*******************************************************************************
@@ -198,6 +201,8 @@ TinyGPSPlus gps;
 Adafruit_BMP085 bmp;
 JTEncode jtencode;
 // SoftwareSerial esp32(5, 6); // RX, TX
+OneWire oneWireObjeto(DS18B20_PIN);
+DallasTemperature sensorDS18B20(&oneWireObjeto);
 
 void setup()
 {
@@ -238,6 +243,7 @@ void setup()
   APRS_setPathSize(pathSize);
   AprsPinInput;
   bmp.begin();
+  sensorDS18B20.begin();
 }
 
 void loop()
@@ -553,6 +559,8 @@ void updatePosition(int high_precision, char *dao)
 
 void updateTelemetry()
 {
+  read_temp_ext();
+
   sprintf(telemetry_buff, "%03d", gps.course.isValid() ? (int)gps.course.deg() : 0);
   telemetry_buff[3] = '/';
   sprintf(telemetry_buff + 4, "%03d", gps.speed.isValid() ? (int)gps.speed.knots() : 0);
@@ -598,7 +606,9 @@ void updateTelemetry()
   telemetry_buff[52] = 'S';
   telemetry_buff[53] = ' ';
 
-  sprintf(telemetry_buff + 54, "%s", comment);
+  dtostrf(temp_ext.number, 6, 2, telemetry_buff + 54);
+
+  sprintf(telemetry_buff + 60, "%s", comment);
 
   // APRS PRECISION AND DATUM OPTION http://www.aprs.org/aprs12/datum.txt ; this extension should be added at end of beacon message.
   // We only send this detailed info if it's likely we're interested in, i.e. searching for landing position
@@ -1112,6 +1122,12 @@ boolean getUBX_ACK(uint8_t *MSG)
       }
     }
   }
+}
+
+void read_temp_ext()
+{
+  sensorDS18B20.requestTemperatures();
+  temp_ext.number = sensorDS18B20.getTempCByIndex(0);
 }
 
 void send_coord_i2c()
