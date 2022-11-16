@@ -56,13 +56,15 @@ void checkUart(void);//reivsa los puertos uart
 String getDB(void);//pregunta al módulo de comunicaciones los dbs de recepcción
 
 void setup() {
+  //pines
+  pinMode(ballonGate, OUTPUT);
+  digitalWrite(ballonGate, HIGH);
   //comms
   Serial.begin(9600,SERIAL_8N1, xtendRX, xtendTx);
   Serial1.begin(9600, SERIAL_8N1, payload1Rx, payload1Tx);
   Serial2.begin(9600, SERIAL_8N1, payload2Rx, payload2Tx);
   Wire.begin(aprsSDA, aprsSCL);
-  //pines
-  pinMode(ballonGate, OUTPUT);
+  
   //busco en memoria los datos relevantes al control del vuelo
   memoria.begin("vuelo",false);
   alturaParacaidas = memoria.getInt("alturaParacaida",10);
