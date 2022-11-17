@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <Preferences.h>
 #include <TinyGPS++.h>
+#include "lightaprs.hpp"
 
 //9xtend
 #define xtendRX 1
@@ -73,6 +74,8 @@ void setup() {
   longitudInicial = memoria.getFloat("longitud",0);
   distanciaMaxima - memoria.getInt("maxdist",0);
   memoria.end();
+
+  lightaprs_begin();
 }
 
 
