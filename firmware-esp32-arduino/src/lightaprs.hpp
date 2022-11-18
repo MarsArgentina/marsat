@@ -35,5 +35,6 @@ typedef union
 void lightaprs_begin();
 void receive_event(int howMany);
 void read_last_received(lightaprs_t *lightaprs);
+bool new_data_available();
 
 #endif

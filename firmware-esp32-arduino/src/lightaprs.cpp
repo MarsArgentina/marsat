@@ -13,6 +13,8 @@
 
 floatunion_t latitud, longitud, altura, temp_int, temp_ext, presion;
 
+bool new_data = false;
+
 void receive_event(int howMany)
 {
     int16_t ret;
@@ -36,6 +38,7 @@ void receive_event(int howMany)
         {
             altura.bytes[i] = Wire.read();
         }
+        new_data = true;
     }
     else if (codigo == 0x02)
     {
@@ -51,6 +54,7 @@ void receive_event(int howMany)
         {
             presion.bytes[i] = Wire.read();
         }
+        new_data = true;
     }
 
     else
@@ -77,4 +81,10 @@ void read_last_received(lightaprs_t *lightaprs)
     lightaprs->presion = presion.number;
     lightaprs->temp_ext = temp_ext.number;
     lightaprs->temp_int = temp_int.number;
+    new_data = false;
+}
+
+bool new_data_available()
+{
+    return new_data;
 }
