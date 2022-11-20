@@ -12,8 +12,8 @@
 #include <TimeLib.h>         //https://github.com/PaulStoffregen/Time
 #include <TimerThree.h>      //https://github.com/PaulStoffregen/TimerThree/
 // #include <SoftwareSerial.h>  //https://www.arduino.cc/en/Reference/softwareSerial
-#include <OneWire.h>        //https://github.com/PaulStoffregen/OneWire
-#include <DallasTemperature.h>    //https://github.com/milesburton/Arduino-Temperature-Control-Library
+#include <OneWire.h>           //https://github.com/PaulStoffregen/OneWire
+#include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
 
 #define ESP32_ADDR 0x04
 #define DS18B20_PIN 7
@@ -77,7 +77,7 @@ char StatusMessage[] = "Esto es una prueba - TMSA ar";
 uint16_t BeaconWait = 50; // seconds sleep for next beacon (HF or VHF). This is optimized value, do not change this if possible.
 uint16_t BattWait = 60;   // seconds sleep if super capacitors/batteries are below BattMin (important if power source is solar panel)
 float BattMin = 4.5;      // min Volts to wake up.
-float DraHighVolt = 6.0;  // min Volts for radio module (DRA818V) to transmit (TX) 1 Watt, below this transmit 0.5 Watt.
+float DraHighVolt = 6.0;  // min Volts for radio module (DRA818V) to transmit (TX) 1 Watt, below this transmit 0.5 Watt. Max 10v
 float GpsMinVolt = 4.0;   // min Volts for GPS to wake up. (important if power source is solar panel)
 float WsprBattMin = 4.5;  // min Volts for HF mradio module to transmit (TX) ~10 mW
 
@@ -747,7 +747,11 @@ static void updateGpsData(int ms)
   latt.number = gps.location.lat();
   lon.number = gps.location.lng();
   alt.number = gps.altitude.meters();
-  send_coord_i2c();
+
+  if (gps.location.isValid())
+  {
+    send_coord_i2c();
+  }
 }
 
 float readBatt()
@@ -1152,6 +1156,7 @@ void send_coord_i2c()
 void send_sens_i2c()
 {
   Wire.beginTransmission(ESP32_ADDR);
+  Wire.write(0x02);
   for (int i = 0; i < 4; i++)
   {
     Wire.write(temp_int.bytes[i]);
