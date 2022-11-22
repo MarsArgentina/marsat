@@ -19,7 +19,7 @@
 // 3 seconds WDT
 #define WDT_TIMEOUT 5
 
-#define PERIODO_TX_TMINUS 60000
+#define PERIODO_TX_TMINUS 5000
 #define PERIODO_TX_ASCENSO 60000
 #define PERIODO_TX_DESCENSO 60000
 #define PERIODO_TX_PARACAIDAS 60000
@@ -34,31 +34,31 @@
 #define ALTURA_MAX_VUELOS_COMERCIALES 12000
 
 // 9xtend
-#define XTEND_RX 1
-#define XTEND_TX 3
-#define XTEND_PWR 12
+#define XTEND_RX 1  // xtendRX
+#define XTEND_TX 3  // xtendTX
+#define XTEND_PWR 27  // xtendPWR
 
 // payload1
-#define PAYLOAD1_RX 35
-#define PAYLOAD1_TX 33
-#define PAYLOAD1_CHECK 13
-#define PAYLOAD1_ON 16
-#define PAYLOAD1_OFF 99 // TODO: definir pin
+#define PAYLOAD1_RX 35  //U1RXESP
+#define PAYLOAD1_TX 33  //U1TXESP
+#define PAYLOAD1_CHECK 13 //Q1
+#define PAYLOAD1_ON 16  //uC_activation_FF1
+#define PAYLOAD1_OFF 25 
 
 // payload2
-#define PAYLOAD2_RX 21
-#define PAYLOAD2_TX 18
-#define PAYLOAD2_CHECK 34
-#define PAYLOAD2_ON 17
-#define PAYLOAD2_OFF 99 // TODO: definir pin
+#define PAYLOAD2_RX 21  //U2RXESP
+#define PAYLOAD2_TX 18  //U2TXESP
+#define PAYLOAD2_CHECK 34 //Q2
+#define PAYLOAD2_ON 17  //uC_activation_FF2
+#define PAYLOAD2_OFF 19 
 
 // lightaprs
-#define LIGHTAPRS_SDA 26
-#define LIGHTAPRS_SCL 14
+#define LIGHTAPRS_SDA 26  //SDA
+#define LIGHTAPRS_SCL 14  //SCL
 
 // gpio
-#define NICROM_PIN 23
-#define PARACHUTE_PIN 22
+#define NICROM_PIN 23 //abortSig
+#define PARACHUTE_PIN 22  //paracaidas
 
 // Inicializaciones
 
@@ -114,16 +114,16 @@ void apagarPayload2(void);
 void setup()
 {
   // pines
-  pinMode(PAYLOAD2_OFF, INPUT);
-
   pinMode(XTEND_PWR, OUTPUT);
   digitalWrite(XTEND_PWR, HIGH);
 
   pinMode(PAYLOAD1_CHECK, INPUT);
+  pinMode(PAYLOAD1_OFF, INPUT);
   pinMode(PAYLOAD1_ON, OUTPUT);
   digitalWrite(PAYLOAD1_ON, LOW);
 
   pinMode(PAYLOAD2_CHECK, INPUT);
+  pinMode(PAYLOAD2_OFF, INPUT);
   pinMode(PAYLOAD2_ON, OUTPUT);
   digitalWrite(PAYLOAD2_ON, LOW);
 
@@ -131,15 +131,17 @@ void setup()
   digitalWrite(NICROM_PIN, LOW);
   pinMode(PARACHUTE_PIN, OUTPUT);
   digitalWrite(PARACHUTE_PIN, LOW);
+  
 
-  esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL);               // add current thread to WDT watch
+  // esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
+  // esp_task_wdt_add(NULL);               // add current thread to WDT watch
 
   // comms
-  Serial.begin(9600, SERIAL_8N1, XTEND_RX, XTEND_TX);
+  Serial.begin(9600);
   Serial1.begin(9600, SERIAL_8N1, PAYLOAD1_RX, PAYLOAD1_TX);
   Serial2.begin(9600, SERIAL_8N1, PAYLOAD2_RX, PAYLOAD2_TX);
   Wire.begin(LIGHTAPRS_SDA, LIGHTAPRS_SCL);
+  Serial.println("Iniciando");
 
   // busco en memoria los datos relevantes al control del vuelo
   memoria.begin("vuelo", false);
@@ -303,7 +305,7 @@ void loop()
     break;
   }
 
-  esp_task_wdt_reset();
+  //esp_task_wdt_reset();
 }
 
 /**
@@ -369,6 +371,7 @@ void checkUart(void)
     {
       distanciaMaxima = serial0data.substring(17).toInt();
       Serial.printf("distanciaMaximaACK: %d\r\n", distanciaMaxima);
+      memoria.putUInt("distanciaMaxima", distanciaMaxima);
     }
     else if (serial0data == "latitudInicial: ")
     {
@@ -384,7 +387,7 @@ void checkUart(void)
 
   if (Serial1.available())
   {
-    serial1data = Serial.readString();
+    serial1data = Serial1.readString();
     Serial.printf("Payload1: %s",serial1data.c_str());
   }
 
@@ -513,24 +516,24 @@ void mantenerPayloadsON(void)
 
 void apagarPayload1(void) // descomentar cuando se corrija hardware
 {
-  // if (estadoPayload1())
-  // {
-  //   pinMode(PAYLOAD1_OFF, OUTPUT);
-  //   digitalWrite(PAYLOAD1_OFF, LOW);
-  //   delay(100);
-  //   pinMode(PAYLOAD1_OFF, INPUT);
-  // }
+  if (estadoPayload1())
+  {
+    pinMode(PAYLOAD1_OFF, OUTPUT);
+    digitalWrite(PAYLOAD1_OFF, LOW);
+    delay(100);
+    pinMode(PAYLOAD1_OFF, INPUT);
+  }
 }
 
 void apagarPayload2(void) // descomentar cuando se corrija hardware
 {
-  // if (estadoPayload2())
-  // {
-  //   pinMode(PAYLOAD2_OFF, OUTPUT);
-  //   digitalWrite(PAYLOAD2_OFF, LOW);
-  //   delay(100);
-  //   pinMode(PAYLOAD2_OFF, INPUT);
-  // }
+  if (estadoPayload2())
+  {
+    pinMode(PAYLOAD2_OFF, OUTPUT);
+    digitalWrite(PAYLOAD2_OFF, LOW);
+    delay(100);
+    pinMode(PAYLOAD2_OFF, INPUT);
+  }
 }
 
 void apagarPayloads(void)

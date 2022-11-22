@@ -15,7 +15,7 @@
 #include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
 
 #define ESP32_ADDR 0x04
-#define DS18B20_PIN 7
+#define DS18B20_PIN 6
 
 typedef union
 {
@@ -76,7 +76,7 @@ char StatusMessage[] = "Esto es una prueba - TMSA ar"; // Se envía solo la prim
 uint16_t BeaconWait = 50; // seconds sleep for next beacon (HF or VHF). This is optimized value, do not change this if possible.
 uint16_t BattWait = 60;   // seconds sleep if super capacitors/batteries are below BattMin (important if power source is solar panel)
 float BattMin = 4.5;      // min Volts to wake up.
-float DraHighVolt = 6.0;  // min Volts for radio module (DRA818V) to transmit (TX) 1 Watt, below this transmit 0.5 Watt. Max 10v
+float DraHighVolt = 6.5;  // min Volts for radio module (DRA818V) to transmit (TX) 1 Watt, below this transmit 0.5 Watt. Max 10v
 float GpsMinVolt = 4.0;   // min Volts for GPS to wake up. (important if power source is solar panel)
 float WsprBattMin = 4.5;  // min Volts for HF mradio module to transmit (TX) ~10 mW
 
@@ -246,7 +246,7 @@ void setup()
 void loop()
 {
   wdt_reset();
-
+  
   if (readBatt() > BattMin)
   {
     if (aliveStatus)
@@ -255,9 +255,6 @@ void loop()
       Serial.println(F("Sending"));
 #endif
       sendStatus();
-#if defined(DEVMODE)
-      Serial.println(F("Status sent"));
-#endif
       aliveStatus = false;
 
       while (readBatt() < BattMin)
