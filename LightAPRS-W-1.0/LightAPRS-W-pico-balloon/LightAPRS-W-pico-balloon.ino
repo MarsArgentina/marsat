@@ -11,7 +11,6 @@
 #include <JTEncode.h>        //https://github.com/etherkit/JTEncode (JT65/JT9/JT4/FT8/WSPR/FSQ Encoder Library)
 #include <TimeLib.h>         //https://github.com/PaulStoffregen/Time
 #include <TimerThree.h>      //https://github.com/PaulStoffregen/TimerThree/
-// #include <SoftwareSerial.h>  //https://www.arduino.cc/en/Reference/softwareSerial
 #include <OneWire.h>           //https://github.com/PaulStoffregen/OneWire
 #include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
 
@@ -65,13 +64,13 @@ floatunion_t latt, lon, alt, temp_int, temp_ext, pres;
 // #define WSPR // Uncomment to enable WSPR
 
 //******************************  APRS CONFIG **********************************
-char CallSign[7] = "LU1MUM";       // DO NOT FORGET TO CHANGE YOUR CALLSIGN
+char CallSign[7] = "LU1MUM";     // DO NOT FORGET TO CHANGE YOUR CALLSIGN
 int8_t CallNumber = 11;            // SSID http://www.aprs.org/aprs11/SSIDs.txt
 char Symbol = 'O';                 // '/O' for balloon, '/>' for car, for more info : http://www.aprs.org/symbols/symbols-new.txt
 bool alternateSymbolTable = false; // false = '/' , true = '\'
 
-char comment[] = "Esto es una prueba - TMSA ar"; // Max 50 char
-char StatusMessage[] = "Esto es una prueba - TMSA ar";
+char comment[168] = "Esto es una prueba - TMSA.ar"; // Max 173 bytes: telemetry_buffer(229) - telemetry_header(61)
+char StatusMessage[] = "Esto es una prueba - TMSA ar"; // Se envía solo la primera vez
 //*****************************************************************************
 
 uint16_t BeaconWait = 50; // seconds sleep for next beacon (HF or VHF). This is optimized value, do not change this if possible.
@@ -141,7 +140,7 @@ boolean send_aprs_enhanced_precision = true;
 boolean radioSetup = false;
 boolean aliveStatus = true; // for tx status message on first wake-up just once.
 
-static char telemetry_buff[255]; // telemetry buffer
+static char telemetry_buff[229]; // telemetry buffer; max APRS message size (256) - coord and timestamp (27) 
 uint16_t TxCount = 1;            // increase +1 after every APRS transmission
 
 //*******************************************************************************
@@ -200,7 +199,6 @@ Si5351 si5351(0x60);
 TinyGPSPlus gps;
 Adafruit_BMP085 bmp;
 JTEncode jtencode;
-// SoftwareSerial esp32(5, 6); // RX, TX
 OneWire oneWireObjeto(DS18B20_PIN);
 DallasTemperature sensorDS18B20(&oneWireObjeto);
 
@@ -225,7 +223,6 @@ void setup()
 
   Serial.begin(57600); // Arduino serial
   Serial1.begin(9600); // GPS serial
-  // esp32.begin(9600);   // ESP32 serial
 #if defined(DEVMODE)
   Serial.println(F("Start"));
 #endif
@@ -559,7 +556,12 @@ void updatePosition(int high_precision, char *dao)
 
 void updateTelemetry()
 {
+  // 000/000/A=002397 003 -55.5/-55.5C 100000Pa 8.5V 04S Esto es una prueba - TMSA ar !wAB!\0
+
   read_temp_ext();
+  float tempC = bmp.readTemperature();
+  float pressure = bmp.readPressure();
+  float batteryVoltage = readBatt();
 
   sprintf(telemetry_buff, "%03d", gps.course.isValid() ? (int)gps.course.deg() : 0);
   telemetry_buff[3] = '/';
@@ -567,48 +569,27 @@ void updateTelemetry()
   telemetry_buff[7] = '/';
   telemetry_buff[8] = 'A';
   telemetry_buff[9] = '=';
-  // sprintf(telemetry_buff + 10, "%06lu", (long)gps.altitude.feet());
+  sprintf(telemetry_buff + 10, "%05d", (int)gps.altitude.feet());
+  telemetry_buff[15] = ' ';
+  sprintf(telemetry_buff + 16, "%03d", (int)gps.satellites.value());
+  telemetry_buff[19] = ' ';
+  sprintf(telemetry_buff + 20, "%05.1f", tempC);
+  telemetry_buff[25] = '/';
+  sprintf(telemetry_buff + 26, "%05.1f", temp_ext);
+  telemetry_buff[31] = 'C';
+  telemetry_buff[32] = ' ';
+  sprintf(telemetry_buff + 33, "%06.0f", pressure);
+  telemetry_buff[39] = 'P';
+  telemetry_buff[40] = 'a';
+  telemetry_buff[41] = ' ';
+  sprintf(telemetry_buff + 42, "%03.1f", batteryVoltage);
+  telemetry_buff[46] = 'V';
+  telemetry_buff[47] = ' ';
+  sprintf(telemetry_buff + 52, "%02d", gps.satellites.isValid() ? (int)gps.satellites.value() : 0);
+  telemetry_buff[54] = 'S';
+  telemetry_buff[55] = ' ';
 
-  // fixing negative altitude values causing display bug on aprs.fi
-  float tempAltitude = gps.altitude.feet();
-
-  if (tempAltitude > 0)
-  {
-    // for positive values
-    sprintf(telemetry_buff + 10, "%06lu", (long)tempAltitude);
-  }
-  else
-  {
-    // for negative values
-    sprintf(telemetry_buff + 10, "%06d", (long)tempAltitude);
-  }
-
-  telemetry_buff[16] = ' ';
-  sprintf(telemetry_buff + 17, "%03d", TxCount);
-  telemetry_buff[20] = 'T';
-  telemetry_buff[21] = 'x';
-  telemetry_buff[22] = 'C';
-  telemetry_buff[23] = ' ';
-  float tempC = bmp.readTemperature(); //-21.4;//
-  dtostrf(tempC, 6, 2, telemetry_buff + 24);
-  telemetry_buff[30] = 'C';
-  telemetry_buff[31] = ' ';
-  float pressure = bmp.readPressure() / 100.0; // Pa to hPa
-  dtostrf(pressure, 7, 2, telemetry_buff + 32);
-  telemetry_buff[39] = 'h';
-  telemetry_buff[40] = 'P';
-  telemetry_buff[41] = 'a';
-  telemetry_buff[42] = ' ';
-  dtostrf(readBatt(), 5, 2, telemetry_buff + 43);
-  telemetry_buff[48] = 'V';
-  telemetry_buff[49] = ' ';
-  sprintf(telemetry_buff + 50, "%02d", gps.satellites.isValid() ? (int)gps.satellites.value() : 0);
-  telemetry_buff[52] = 'S';
-  telemetry_buff[53] = ' ';
-
-  dtostrf(temp_ext.number, 6, 2, telemetry_buff + 54);
-
-  sprintf(telemetry_buff + 60, "%s", comment);
+  sprintf(telemetry_buff + 56, "%s", comment);
 
   // APRS PRECISION AND DATUM OPTION http://www.aprs.org/aprs12/datum.txt ; this extension should be added at end of beacon message.
   // We only send this detailed info if it's likely we're interested in, i.e. searching for landing position
@@ -743,7 +724,6 @@ static void updateGpsData(int ms)
       break;
   } while (millis() - start < ms);
 
-  // esp32.printf("%f,%f,%f\r", gps.location.lat(), gps.location.lng(), gps.altitude.meters());
   latt.number = gps.location.lat();
   lon.number = gps.location.lng();
   alt.number = gps.altitude.meters();
@@ -1132,6 +1112,10 @@ void read_temp_ext()
 {
   sensorDS18B20.requestTemperatures();
   temp_ext.number = sensorDS18B20.getTempCByIndex(0);
+  if (temp_ext.number == -127.00)
+  {
+    temp_ext.number = 0;
+  }
 }
 
 void send_coord_i2c()
