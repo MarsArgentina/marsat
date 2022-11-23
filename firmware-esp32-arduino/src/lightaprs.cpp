@@ -13,7 +13,7 @@
 
 floatunion_t latitud, longitud, altura, temp_int, temp_ext, presion;
 
-bool new_data = false;
+bool new_data = false, detectado = false;
 
 void receive_event(int howMany)
 {
@@ -21,7 +21,7 @@ void receive_event(int howMany)
     byte codigo = Wire.read();
     Serial.print("Recibidos ");
     Serial.print(howMany);
-    Serial.print(" bytes, codigo: ");
+    Serial.print(" bytes del LightAPRS. Codigo: ");
     Serial.println(codigo);
 
     if (codigo == 0x01)
@@ -56,6 +56,10 @@ void receive_event(int howMany)
         }
         new_data = true;
     }
+    // else if (codigo == 0x03)
+    // {
+    //     detectado = true;
+    // }
 
     else
     {
@@ -68,10 +72,9 @@ void receive_event(int howMany)
 
 void lightaprs_begin()
 {
-    Wire.begin(0x04);             // join i2c bus with address #4
+    //Wire.begin(0x04);              // join i2c bus with address #4
     Wire.onReceive(receive_event); // register event
 }
-
 
 void read_last_received(lightaprs_t *lightaprs)
 {
@@ -88,3 +91,8 @@ bool new_data_available()
 {
     return new_data;
 }
+
+// bool lightaprs_detected()
+// {
+//     return detectado;
+// }

@@ -34,31 +34,31 @@
 #define ALTURA_MAX_VUELOS_COMERCIALES 12000
 
 // 9xtend
-#define XTEND_RX 1  // xtendRX
-#define XTEND_TX 3  // xtendTX
-#define XTEND_PWR 27  // xtendPWR
+#define XTEND_RX 1   // xtendRX
+#define XTEND_TX 3   // xtendTX
+#define XTEND_PWR 27 // xtendPWR
 
 // payload1
-#define PAYLOAD1_RX 35  //U1RXESP
-#define PAYLOAD1_TX 33  //U1TXESP
-#define PAYLOAD1_CHECK 13 //Q1
-#define PAYLOAD1_ON 16  //uC_activation_FF1
-#define PAYLOAD1_OFF 25 
+#define PAYLOAD1_RX 35    // U1RXESP
+#define PAYLOAD1_TX 33    // U1TXESP
+#define PAYLOAD1_CHECK 13 // Q1
+#define PAYLOAD1_ON 16    // uC_activation_FF1
+#define PAYLOAD1_OFF 25
 
 // payload2
-#define PAYLOAD2_RX 21  //U2RXESP
-#define PAYLOAD2_TX 18  //U2TXESP
-#define PAYLOAD2_CHECK 34 //Q2
-#define PAYLOAD2_ON 17  //uC_activation_FF2
-#define PAYLOAD2_OFF 19 
+#define PAYLOAD2_RX 21    // U2RXESP
+#define PAYLOAD2_TX 18    // U2TXESP
+#define PAYLOAD2_CHECK 34 // Q2
+#define PAYLOAD2_ON 17    // uC_activation_FF2
+#define PAYLOAD2_OFF 19
 
 // lightaprs
-#define LIGHTAPRS_SDA 26  //SDA
-#define LIGHTAPRS_SCL 14  //SCL
+#define LIGHTAPRS_SDA 14 // SDA
+#define LIGHTAPRS_SCL 26 // SCL
 
 // gpio
-#define NICROM_PIN 23 //abortSig
-#define PARACHUTE_PIN 22  //paracaidas
+#define NICROM_PIN 23    // abortSig
+#define PARACHUTE_PIN 22 // paracaidas
 
 // Inicializaciones
 
@@ -110,6 +110,8 @@ void encenderPayload1(void);
 void encenderPayload2(void);
 void apagarPayload1(void);
 void apagarPayload2(void);
+void desactivar_paracaidas(void);
+void activar_paracaidas(void);
 
 void setup()
 {
@@ -131,16 +133,15 @@ void setup()
   digitalWrite(NICROM_PIN, LOW);
   pinMode(PARACHUTE_PIN, OUTPUT);
   digitalWrite(PARACHUTE_PIN, LOW);
-  
 
-  // esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
-  // esp_task_wdt_add(NULL);               // add current thread to WDT watch
+  esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);               // add current thread to WDT watch
 
   // comms
   Serial.begin(9600);
   Serial1.begin(9600, SERIAL_8N1, PAYLOAD1_RX, PAYLOAD1_TX);
   Serial2.begin(9600, SERIAL_8N1, PAYLOAD2_RX, PAYLOAD2_TX);
-  Wire.begin(LIGHTAPRS_SDA, LIGHTAPRS_SCL);
+  Wire.begin(0x04, LIGHTAPRS_SDA, LIGHTAPRS_SCL, 100000);
   Serial.println("Iniciando");
 
   // busco en memoria los datos relevantes al control del vuelo
@@ -305,7 +306,7 @@ void loop()
     break;
   }
 
-  //esp_task_wdt_reset();
+  esp_task_wdt_reset();
 }
 
 /**
@@ -321,14 +322,30 @@ void checkUart(void)
     lastKAtime = millis();
     serial0data = Serial.readString();
 
-    if (serial0data == "keepalive")
-    {
+    if (serial0data == "estado")
+    { // TODO: DB DEVUELVE UN STRING CON \R, ARREGLAR
       Serial.printf("[%d] dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", estadoVuelo, getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      // Serial.printf("[%d] APRS: %d dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", estadoVuelo, lightaprs_detected(), getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
     else if (serial0data == "abort")
     {
       abortarVuelo();
       Serial.println("abortACK");
+    }
+    else if (serial0data == "abortOFF")
+    {
+      apagar_nicrom();
+      Serial.println("abortOFFACK");
+    }
+    else if (serial0data == "paracaidasON")
+    {
+      activar_paracaidas();
+      Serial.println("paracaidasONACK");
+    }
+    else if (serial0data == "paracaidasOFF")
+    {
+      desactivar_paracaidas();
+      Serial.println("paracaidasOFFACK");
     }
     else if (serial0data == "payload1: ")
     {
@@ -367,7 +384,7 @@ void checkUart(void)
     {
       Serial.printf("Payload1: %d, Payload2: %d\r\n", estadoPayload1(), estadoPayload2());
     }
-    else if (serial0data == "distanciaMaxima: ")
+    else if (serial0data == "distanciaMaxima: ") // TODO: cambiar interpetación de datos (strstr o stridx)
     {
       distanciaMaxima = serial0data.substring(17).toInt();
       Serial.printf("distanciaMaximaACK: %d\r\n", distanciaMaxima);
@@ -383,18 +400,27 @@ void checkUart(void)
       longitudInicial = serial0data.substring(17).toFloat();
       Serial.printf("longitudInicialACK: %f\r\n", longitudInicial);
     }
+    else if (serial0data == "restart")
+    {
+      Serial.println("RestartACK");
+      ESP.restart();
+    }
+    else
+    {
+      Serial.println("Comando no reconocido");
+    }
   }
 
   if (Serial1.available())
   {
     serial1data = Serial1.readString();
-    Serial.printf("Payload1: %s",serial1data.c_str());
+    Serial.printf("Payload1: %s", serial1data.c_str());
   }
 
   if (Serial2.available())
   {
     serial2data = Serial2.readString();
-    Serial.printf("Payload2: %s",serial2data.c_str());
+    Serial.printf("Payload2: %s", serial2data.c_str());
   }
 }
 
@@ -408,7 +434,7 @@ String getDB(void)
   uint32_t lastmillis;
 
   String respuestaXtend;
-  Serial.write("+++\r"); // entro en modo comandos
+  Serial.write("+++"); // entro en modo comandos
 
   lastmillis = millis();
   while (Serial.available() == 0 && (millis() - lastmillis) < 1000)
@@ -424,8 +450,8 @@ String getDB(void)
   respuestaXtend = Serial.readString();
 
   Serial.write("ATCN\r"); // salgo de modo comandos
-  
-  return respuestaXtend;  // devuelvo la respuesta de los db
+
+  return respuestaXtend.substring(0, respuestaXtend.length() - 2); // devuelvo la respuesta de los db
 }
 
 /**
@@ -474,6 +500,16 @@ void abortarVuelo(void)
 void apagar_nicrom(void)
 {
   digitalWrite(NICROM_PIN, LOW);
+}
+
+void activar_paracaidas(void)
+{
+  digitalWrite(PARACHUTE_PIN, HIGH);
+}
+
+void desactivar_paracaidas(void)
+{
+  digitalWrite(PARACHUTE_PIN, LOW);
 }
 
 void encenderPayload1(void)

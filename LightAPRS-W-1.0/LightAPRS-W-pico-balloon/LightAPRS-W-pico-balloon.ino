@@ -2,15 +2,15 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <avr/wdt.h>
-#include <GEOFENCE.h>        // Modified version of https://github.com/TomasTT7/TT7F-Float-Tracker/blob/master/Software/ARM_GEOFENCE.c
-#include <LibAPRS.h>         //Modified version of https://github.com/markqvist/LibAPRS
-#include <TinyGPS++.h>       //https://github.com/mikalhart/TinyGPSPlus
-#include <LowPower.h>        //https://github.com/rocketscream/Low-Power
-#include <Adafruit_BMP085.h> //https://github.com/adafruit/Adafruit-BMP085-Library
-#include <si5351.h>          //https://github.com/etherkit/Si5351Arduino
-#include <JTEncode.h>        //https://github.com/etherkit/JTEncode (JT65/JT9/JT4/FT8/WSPR/FSQ Encoder Library)
-#include <TimeLib.h>         //https://github.com/PaulStoffregen/Time
-#include <TimerThree.h>      //https://github.com/PaulStoffregen/TimerThree/
+#include <GEOFENCE.h>          // Modified version of https://github.com/TomasTT7/TT7F-Float-Tracker/blob/master/Software/ARM_GEOFENCE.c
+#include <LibAPRS.h>           //Modified version of https://github.com/markqvist/LibAPRS
+#include <TinyGPS++.h>         //https://github.com/mikalhart/TinyGPSPlus
+#include <LowPower.h>          //https://github.com/rocketscream/Low-Power
+#include <Adafruit_BMP085.h>   //https://github.com/adafruit/Adafruit-BMP085-Library
+#include <si5351.h>            //https://github.com/etherkit/Si5351Arduino
+#include <JTEncode.h>          //https://github.com/etherkit/JTEncode (JT65/JT9/JT4/FT8/WSPR/FSQ Encoder Library)
+#include <TimeLib.h>           //https://github.com/PaulStoffregen/Time
+#include <TimerThree.h>        //https://github.com/PaulStoffregen/TimerThree/
 #include <OneWire.h>           //https://github.com/PaulStoffregen/OneWire
 #include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
 
@@ -64,12 +64,12 @@ floatunion_t latt, lon, alt, temp_int, temp_ext, pres;
 // #define WSPR // Uncomment to enable WSPR
 
 //******************************  APRS CONFIG **********************************
-char CallSign[7] = "LU1MUM";     // DO NOT FORGET TO CHANGE YOUR CALLSIGN
+char CallSign[7] = "LU1MUM";       // DO NOT FORGET TO CHANGE YOUR CALLSIGN
 int8_t CallNumber = 11;            // SSID http://www.aprs.org/aprs11/SSIDs.txt
 char Symbol = 'O';                 // '/O' for balloon, '/>' for car, for more info : http://www.aprs.org/symbols/symbols-new.txt
 bool alternateSymbolTable = false; // false = '/' , true = '\'
 
-char comment[168] = "Esto es una prueba - TMSA.ar"; // Max 173 bytes: telemetry_buffer(229) - telemetry_header(61)
+char comment[168] = "Esto es una prueba - TMSA.ar";    // Max 173 bytes: telemetry_buffer(229) - telemetry_header(61)
 char StatusMessage[] = "Esto es una prueba - TMSA ar"; // Se envía solo la primera vez
 //*****************************************************************************
 
@@ -140,7 +140,7 @@ boolean send_aprs_enhanced_precision = true;
 boolean radioSetup = false;
 boolean aliveStatus = true; // for tx status message on first wake-up just once.
 
-static char telemetry_buff[229]; // telemetry buffer; max APRS message size (256) - coord and timestamp (27) 
+static char telemetry_buff[229]; // telemetry buffer; max APRS message size (256) - coord and timestamp (27)
 uint16_t TxCount = 1;            // increase +1 after every APRS transmission
 
 //*******************************************************************************
@@ -241,12 +241,13 @@ void setup()
   AprsPinInput;
   bmp.begin();
   sensorDS18B20.begin();
+  initial_msg_i2c();
 }
 
 void loop()
 {
   wdt_reset();
-  
+
   if (readBatt() > BattMin)
   {
     if (aliveStatus)
@@ -1150,5 +1151,14 @@ void send_sens_i2c()
   {
     Wire.write(pres.bytes[i]);
   }
+  Wire.endTransmission();
+}
+
+void initial_msg_i2c()
+{
+  Wire.beginTransmission(ESP32_ADDR);
+  Wire.write(0x03);
+  Wire.write(0x03);
+  Wire.write(0x03);
   Wire.endTransmission();
 }
