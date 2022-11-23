@@ -323,7 +323,7 @@ void checkUart(void)
     serial0data = Serial.readString();
 
     if (serial0data == "estado")
-    { // TODO: DB DEVUELVE UN STRING CON \R, ARREGLAR
+    {
       Serial.printf("[%d] dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", estadoVuelo, getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
       // Serial.printf("[%d] APRS: %d dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", estadoVuelo, lightaprs_detected(), getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
@@ -451,7 +451,7 @@ String getDB(void)
 
   Serial.write("ATCN\r"); // salgo de modo comandos
 
-  return respuestaXtend.substring(0, respuestaXtend.length() - 2); // devuelvo la respuesta de los db
+  return respuestaXtend.substring(0, respuestaXtend.length() - 1); // devuelvo la respuesta de los db
 }
 
 /**
