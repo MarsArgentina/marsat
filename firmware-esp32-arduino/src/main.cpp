@@ -9,6 +9,7 @@
  *
  *
  */
+//TODO: aumentar corriente en nicrom si no se detecta que el globo desciende.
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -332,6 +333,15 @@ void checkUart(void)
       abortarVuelo();
       Serial.println("abortACK");
     }
+    else if(serial0data.indexOf("nicromON: ")>=0)
+    {
+      int pwm = serial0data.substring(10).toInt();
+      if(pwm>=0 && pwm<256)
+      {
+        Serial.printf("PWM: %d\r\n", pwm);
+        analogWrite(NICROM_PIN, pwm);
+      }
+    }
     else if (serial0data == "abortOFF")
     {
       apagar_nicrom();
@@ -384,18 +394,18 @@ void checkUart(void)
     {
       Serial.printf("Payload1: %d, Payload2: %d\r\n", estadoPayload1(), estadoPayload2());
     }
-    else if (serial0data == "distanciaMaxima: ") // TODO: cambiar interpetación de datos (strstr o stridx)
+    else if (serial0data.indexOf("distanciaMaxima: ") >= 0) 
     {
       distanciaMaxima = serial0data.substring(17).toInt();
       Serial.printf("distanciaMaximaACK: %d\r\n", distanciaMaxima);
       memoria.putUInt("distanciaMaxima", distanciaMaxima);
     }
-    else if (serial0data == "latitudInicial: ")
+    else if (serial0data.indexOf("latitudInicial: ") >= 0)
     {
       latitudInicial = serial0data.substring(16).toFloat();
       Serial.printf("latitudInicialACK: %f\r\n", latitudInicial);
     }
-    else if (serial0data == "longitudInicial: ")
+    else if (serial0data.indexOf("longitudInicial: ") >= 0)
     {
       longitudInicial = serial0data.substring(17).toFloat();
       Serial.printf("longitudInicialACK: %f\r\n", longitudInicial);
@@ -494,12 +504,14 @@ uint32_t getDistance(float flat1, float flon1, float flat2, float flon2)
 
 void abortarVuelo(void)
 {
-  digitalWrite(NICROM_PIN, HIGH);
+  //digitalWrite(NICROM_PIN, HIGH);
+  analogWrite(NICROM_PIN, 255);
 }
 
 void apagar_nicrom(void)
 {
-  digitalWrite(NICROM_PIN, LOW);
+  //digitalWrite(NICROM_PIN, LOW);
+  analogWrite(NICROM_PIN, 0);
 }
 
 void activar_paracaidas(void)

@@ -31,113 +31,113 @@ Abortar
 
 SEND
 1
-Enviar a payload1
-70 61 79 6C 6F 61 64 31 3A 20
+abortOFF
+61 62 6F 72 74 4F 46 46
 0
 5
 
 SEND
 2
-Enviar a payload2
-70 61 79 6C 6F 61 64 32 3A 20
-0
-5
-
-SEND
-3
-Apagar payload 1
-70 61 79 6C 6F 61 64 31 4F 46 46
-0
-5
-
-SEND
-4
-Apagar payload 2
-70 61 79 6C 6F 61 64 32 4F 46 46
-0
-5
-
-SEND
-5
-Apagar ambos payloads
-70 61 79 6C 6F 61 64 73 4F 46 46
-0
-5
-
-SEND
-6
-Encender payload 1
-70 61 79 6C 6F 61 64 31 4F 4E
-0
-5
-
-SEND
-7
-Encender payload 2
-70 61 79 6C 6F 61 64 32 4F 4E
-0
-5
-
-SEND
-8
 Ver estados de payloads
 65 73 74 61 64 6F 50 61 79 6C 6F 61 64 73
 0
 5
 
 SEND
+3
+Apagar ambos payloads
+70 61 79 6C 6F 61 64 73 4F 46 46
+0
+5
+
+SEND
+4
+Apagar payload 1
+70 61 79 6C 6F 61 64 31 4F 46 46
+0
+5
+
+SEND
+5
+Encender payload 1
+70 61 79 6C 6F 61 64 31 4F 4E
+0
+5
+
+SEND
+6
+Enviar a payload1
+70 61 79 6C 6F 61 64 31 3A 20
+0
+5
+
+SEND
+7
+Apagar payload 2
+70 61 79 6C 6F 61 64 32 4F 46 46
+0
+5
+
+SEND
+8
+Encender payload 2
+70 61 79 6C 6F 61 64 32 4F 4E
+0
+5
+
+SEND
 9
+Enviar a payload2
+70 61 79 6C 6F 61 64 32 3A 20
+0
+5
+
+SEND
+10
 Definir distancia máxima en metros
 64 69 73 74 61 6E 63 69 61 4D 61 78 69 6D 61 3A 20 31 30 30 30 30 30
 0
 5
 
 SEND
-10
+11
 Definir latitud inicial
 6C 61 74 69 74 75 64 49 6E 69 63 69 61 6C 3A 20 2D 33 33 2E 31 34 34 31 34 32 34
 0
 5
 
 SEND
-11
+12
 Definir longitud inicial
 6C 6F 6E 67 69 74 75 64 49 6E 69 63 69 61 6C 3A 20 2D 36 38 2E 34 38 35 38 36 35 38
 0
 5
 
 SEND
-12
+13
 Ver estado general
 65 73 74 61 64 6F
 0
 5
 
 SEND
-13
+14
 entrar en modo comandos
 2B 2B 2B
 0
 5
 
 SEND
-14
+15
 atdb
 41 54 44 42 0D
 0
 5
 
 SEND
-15
+16
 ATCN
 41 54 43 4E 0D
-0
-5
-
-SEND
-16
-abortOFF
-61 62 6F 72 74 4F 46 46
 0
 5
 
@@ -159,6 +159,62 @@ SEND
 19
 Reiniciar ESP
 72 65 73 74 61 72 74
+0
+5
+
+SEND
+20
+NICROM 30
+6E 69 63 72 6F 6D 4F 4E 3A 20 33 30
+0
+5
+
+SEND
+21
+NICROM 60
+6E 69 63 72 6F 6D 4F 4E 3A 20 36 30
+0
+5
+
+SEND
+22
+NICROM 90
+6E 69 63 72 6F 6D 4F 4E 3A 20 39 30
+0
+5
+
+SEND
+23
+NICROM 120
+6E 69 63 72 6F 6D 4F 4E 3A 20 31 32 30
+0
+5
+
+SEND
+24
+NICROM 150
+6E 69 63 72 6F 6D 4F 4E 3A 20 31 35 30
+0
+5
+
+SEND
+25
+NICROM 180
+6E 69 63 72 6F 6D 4F 4E 3A 20 31 38 30
+0
+5
+
+SEND
+26
+NICROM 210
+6E 69 63 72 6F 6D 4F 4E 3A 20 32 31 30
+0
+5
+
+SEND
+27
+NICROM 255
+6E 69 63 72 6F 6D 4F 4E 3A 20 32 35 35
 0
 5
 
