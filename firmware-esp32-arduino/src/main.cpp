@@ -9,7 +9,7 @@
  *
  *
  */
-//TODO: aumentar corriente en nicrom si no se detecta que el globo desciende.
+// TODO: aumentar corriente en nicrom si no se detecta que el globo desciende.
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -143,8 +143,9 @@ void setup()
   // comms
   Serial.begin(9600);
   Serial1.begin(9600, SERIAL_8N1, PAYLOAD1_RX, PAYLOAD1_TX);
-  Serial2.begin(9600, SERIAL_8N1, PAYLOAD2_RX, PAYLOAD2_TX);
-  Wire.begin(ESP32_ADDR, LIGHTAPRS_SDA, LIGHTAPRS_SCL, 100000);
+  Serial2.begin(9600, SERIAL_8N1, LIGHTAPRS_SDA, LIGHTAPRS_SCL);
+  // Wire.begin(ESP32_ADDR, LIGHTAPRS_SDA, LIGHTAPRS_SCL, 100000);
+
   Serial.println("Iniciando");
 
   // busco en memoria los datos relevantes al control del vuelo
@@ -154,9 +155,6 @@ void setup()
   longitudInicial = memoria.getFloat("longitud", 0);
   distanciaMaxima = memoria.getUInt("maxdist", 100000);
   memoria.end();
-
-  // inicializo la comunicación con el módulo lightaprs
-  lightaprs_begin();
 }
 
 void loop()
@@ -168,6 +166,12 @@ void loop()
     mantenerPayloadsON();
     checkUart();
 
+    int disponible = Serial2.available();
+    if (disponible > 0)
+    {
+      receive_event(disponible);
+    }
+
     if (new_data_available())
     {
       read_last_received(&lightaprs);
@@ -178,7 +182,7 @@ void loop()
     if ((millis() - lastmillis) > PERIODO_TX_TMINUS)
     {
       lastmillis = millis();
-      Serial.printf("[t-minus] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      Serial.printf("[t-minus] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
 
     if (lightaprs.altura > ALTURA_ASCENSO)
@@ -202,7 +206,7 @@ void loop()
     if ((millis() - lastmillis) > PERIODO_TX_ASCENSO)
     {
       lastmillis = millis();
-      Serial.printf("[ascenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      Serial.printf("[ascenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
 
     if (getDistance(latitudInicial, longitudInicial, lightaprs.latitud, lightaprs.longitud) > distanciaMaxima)
@@ -243,7 +247,7 @@ void loop()
     if ((millis() - lastmillis) > PERIODO_TX_DESCENSO)
     {
       lastmillis = millis();
-      Serial.printf("[descenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      Serial.printf("[descenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
     if (lightaprs.altura >= alturaAnterior)
     {
@@ -276,7 +280,7 @@ void loop()
     if ((millis() - lastmillis) > PERIODO_TX_PARACAIDAS)
     {
       lastmillis = millis();
-      Serial.printf("[paracaidas] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      Serial.printf("[paracaidas] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
     if (lightaprs.altura <= ALTURA_ASCENSO)
     {
@@ -299,7 +303,7 @@ void loop()
     if ((millis() - lastmillis) > PERIODO_TX_RESCATE)
     {
       lastmillis = millis();
-      Serial.printf("[rescate] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      Serial.printf("[rescate] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
     break;
   }
@@ -327,18 +331,18 @@ void checkUart(void)
 
     if (serial0data == "estado")
     {
-      Serial.printf("[%d] dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", estadoVuelo, getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
-      // Serial.printf("[%d] APRS: %d dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %f\r\n", estadoVuelo, lightaprs_detected(), getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      Serial.printf("[%d] dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", estadoVuelo, getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
+      // Serial.printf("[%d] APRS: %d dB: %s Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", estadoVuelo, lightaprs_detected(), getDB().c_str(), lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
     else if (serial0data == "abort")
     {
       abortarVuelo();
       Serial.println("abortACK");
     }
-    else if(serial0data.indexOf("nicromON: ")>=0)
+    else if (serial0data.indexOf("nicromON: ") >= 0)
     {
       int pwm = serial0data.substring(10).toInt();
-      if(pwm>=0 && pwm<256)
+      if (pwm >= 0 && pwm < 256)
       {
         Serial.printf("PWM: %d\r\n", pwm);
         analogWrite(NICROM_PIN, pwm);
@@ -396,7 +400,7 @@ void checkUart(void)
     {
       Serial.printf("Payload1: %d, Payload2: %d\r\n", estadoPayload1(), estadoPayload2());
     }
-    else if (serial0data.indexOf("distanciaMaxima: ") >= 0) 
+    else if (serial0data.indexOf("distanciaMaxima: ") >= 0)
     {
       distanciaMaxima = serial0data.substring(17).toInt();
       Serial.printf("distanciaMaximaACK: %d\r\n", distanciaMaxima);
@@ -429,11 +433,11 @@ void checkUart(void)
     Serial.printf("Payload1: %s", serial1data.c_str());
   }
 
-  if (Serial2.available())
-  {
-    serial2data = Serial2.readString();
-    Serial.printf("Payload2: %s", serial2data.c_str());
-  }
+  // if (Serial2.available())
+  // {
+  //   serial2data = Serial2.readString();
+  //   Serial.printf("Payload2: %s", serial2data.c_str());
+  // }
 }
 
 /**
@@ -506,13 +510,13 @@ uint32_t getDistance(float flat1, float flon1, float flat2, float flon2)
 
 void abortarVuelo(void)
 {
-  //digitalWrite(NICROM_PIN, HIGH);
+  // digitalWrite(NICROM_PIN, HIGH);
   analogWrite(NICROM_PIN, 255);
 }
 
 void apagar_nicrom(void)
 {
-  //digitalWrite(NICROM_PIN, LOW);
+  // digitalWrite(NICROM_PIN, LOW);
   analogWrite(NICROM_PIN, 0);
 }
 

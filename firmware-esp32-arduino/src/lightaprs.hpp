@@ -22,12 +22,13 @@ typedef struct lightaprs_t
   float altura;
   float temp_int;
   float temp_ext;
-  float presion;
+  int32_t presion;
 
 }lightaprs_t;
 
 typedef union
 {
+  int32_t entero;
   float number;
   uint8_t bytes[4];
 } floatunion_t;

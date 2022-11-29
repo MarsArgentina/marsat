@@ -13,13 +13,16 @@
 #include <TimerThree.h>        //https://github.com/PaulStoffregen/TimerThree/
 #include <OneWire.h>           //https://github.com/PaulStoffregen/OneWire
 #include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
+#include <SoftwareSerial.h>
 
-#define ESP32_ADDR 0x10
-#define DS18B20_PIN 6
+#define DS18B20_PIN 7
+#define ESP32_RX 6
+#define ESP32_TX 5
 
 typedef union
 {
-  float number;
+  int32_t entero;
+  float flotante;
   uint8_t bytes[4];
 } floatunion_t;
 
@@ -201,6 +204,7 @@ Adafruit_BMP085 bmp;
 JTEncode jtencode;
 OneWire oneWireObjeto(DS18B20_PIN);
 DallasTemperature sensorDS18B20(&oneWireObjeto);
+SoftwareSerial ESP_Serial(ESP32_RX, ESP32_TX); // RX, TX
 
 void setup()
 {
@@ -241,6 +245,7 @@ void setup()
   AprsPinInput;
   bmp.begin();
   sensorDS18B20.begin();
+  ESP_Serial.begin(9600);
   initial_msg_i2c();
 }
 
@@ -558,7 +563,7 @@ void updateTelemetry()
 
   read_temp_ext();
   float tempC = bmp.readTemperature();//-21.4;//
-  int pressure = bmp.readPressure(); //Pa 
+  int32_t pressure = bmp.readPressure(); //Pa 
   float batteryVoltage = readBatt();
 
   sprintf(telemetry_buff, "%03d", gps.course.isValid() ? (int)gps.course.deg() : 0);
@@ -585,7 +590,7 @@ void updateTelemetry()
   telemetry_buff[20] = ' '; 
   dtostrf(tempC, 5, 1, telemetry_buff + 21);
   telemetry_buff[26] = '/';
-  dtostrf(temp_ext.number, 5, 1, telemetry_buff + 27);
+  dtostrf(temp_ext.flotante, 5, 1, telemetry_buff + 27);
   telemetry_buff[32] = 'C';
   telemetry_buff[33] = ' '; 
   sprintf(telemetry_buff + 34, "%06d", pressure);
@@ -617,8 +622,8 @@ void updateTelemetry()
 #if defined(DEVMODE)
   Serial.println(telemetry_buff);
 #endif
-  temp_int.number = tempC;
-  pres.number = pressure;
+  temp_int.flotante = tempC;
+  pres.entero = pressure;
   send_sens_i2c();
 }
 
@@ -734,9 +739,9 @@ static void updateGpsData(int ms)
       break;
   } while (millis() - start < ms);
 
-  latt.number = gps.location.lat();
-  lon.number = gps.location.lng();
-  alt.number = gps.altitude.meters();
+  latt.flotante = gps.location.lat();
+  lon.flotante = gps.location.lng();
+  alt.flotante = gps.altitude.meters();
 
   if (gps.location.isValid())
   {
@@ -1121,59 +1126,55 @@ boolean getUBX_ACK(uint8_t *MSG)
 void read_temp_ext()
 {
   sensorDS18B20.requestTemperatures();
-  temp_ext.number = sensorDS18B20.getTempCByIndex(0);
-  if (temp_ext.number == -127.00)
+  temp_ext.flotante = sensorDS18B20.getTempCByIndex(0);
+  if (temp_ext.flotante == -127.00)
   {
-    temp_ext.number = 0;
+    temp_ext.flotante = 0;
   }
 }
 
 void send_coord_i2c()
 {
-  Wire.beginTransmission(ESP32_ADDR);
-  Wire.write(0x01);
+  ESP_Serial.write(0x01);
   for (int i = 0; i < 4; i++)
   {
-    Wire.write(latt.bytes[i]);
+    ESP_Serial.write(latt.bytes[i]);
   }
   for (int i = 0; i < 4; i++)
   {
-    Wire.write(lon.bytes[i]);
+    ESP_Serial.write(lon.bytes[i]);
   }
   for (int i = 0; i < 4; i++)
   {
-    Wire.write(alt.bytes[i]);
+    ESP_Serial.write(alt.bytes[i]);
   }
-  Wire.endTransmission();
 }
 
 void send_sens_i2c()
 {
-  Wire.beginTransmission(ESP32_ADDR);
-  Wire.write(0x02);
+  ESP_Serial.write(0x02);
   for (int i = 0; i < 4; i++)
   {
-    Wire.write(temp_int.bytes[i]);
+    ESP_Serial.write(temp_int.bytes[i]);
   }
   for (int i = 0; i < 4; i++)
   {
-    Wire.write(temp_ext.bytes[i]);
+    ESP_Serial.write(temp_ext.bytes[i]);
   }
   for (int i = 0; i < 4; i++)
   {
-    Wire.write(pres.bytes[i]);
+    ESP_Serial.write(pres.bytes[i]);
   }
-  Wire.endTransmission();
 }
 
 void initial_msg_i2c()
 {
-  latt.number = -32.652547;
-  lon.number = -68.256841;
-  alt.number = 817.25;
-  temp_int.number = 37.65;
-  temp_ext.number = -25.36;
-  pres.number = 1013.25;
+  latt.flotante = -32.652547;
+  lon.flotante = -68.256841;
+  alt.flotante = 817.25;
+  temp_int.flotante = 37.65;
+  temp_ext.flotante = -25.36;
+  pres.entero = 1013;
   send_coord_i2c();
   send_sens_i2c();
 }
