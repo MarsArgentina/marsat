@@ -17,6 +17,8 @@
 #include "lightaprs.hpp"
 #include <esp_task_wdt.h>
 
+#define ESP32_ADDR 0x10
+
 // 3 seconds WDT
 #define WDT_TIMEOUT 5
 
@@ -142,7 +144,7 @@ void setup()
   Serial.begin(9600);
   Serial1.begin(9600, SERIAL_8N1, PAYLOAD1_RX, PAYLOAD1_TX);
   Serial2.begin(9600, SERIAL_8N1, PAYLOAD2_RX, PAYLOAD2_TX);
-  Wire.begin(0x04, LIGHTAPRS_SDA, LIGHTAPRS_SCL, 100000);
+  Wire.begin(ESP32_ADDR, LIGHTAPRS_SDA, LIGHTAPRS_SCL, 100000);
   Serial.println("Iniciando");
 
   // busco en memoria los datos relevantes al control del vuelo

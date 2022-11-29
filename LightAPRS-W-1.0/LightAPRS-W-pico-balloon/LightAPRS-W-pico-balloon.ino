@@ -14,7 +14,7 @@
 #include <OneWire.h>           //https://github.com/PaulStoffregen/OneWire
 #include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
 
-#define ESP32_ADDR 0x04
+#define ESP32_ADDR 0x10
 #define DS18B20_PIN 6
 
 typedef union
@@ -1168,9 +1168,12 @@ void send_sens_i2c()
 
 void initial_msg_i2c()
 {
-  Wire.beginTransmission(ESP32_ADDR);
-  Wire.write(0x03);
-  Wire.write(0x03);
-  Wire.write(0x03);
-  Wire.endTransmission();
+  latt.number = -32.652547;
+  lon.number = -68.256841;
+  alt.number = 817.25;
+  temp_int.number = 37.65;
+  temp_ext.number = -25.36;
+  pres.number = 1013.25;
+  send_coord_i2c();
+  send_sens_i2c();
 }

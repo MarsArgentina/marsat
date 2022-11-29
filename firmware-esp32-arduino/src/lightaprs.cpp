@@ -24,43 +24,47 @@ void receive_event(int howMany)
     Serial.print(" bytes del LightAPRS. Codigo: ");
     Serial.println(codigo);
 
-    if (codigo == 0x01)
+    if (howMany >= 13)
     {
-        for (int i = 0; i < 4; i++)
-        {
-            latitud.bytes[i] = Wire.read();
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            longitud.bytes[i] = Wire.read();
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            altura.bytes[i] = Wire.read();
-        }
-        new_data = true;
-    }
-    else if (codigo == 0x02)
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            temp_int.bytes[i] = Wire.read();
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            temp_ext.bytes[i] = Wire.read();
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            presion.bytes[i] = Wire.read();
-        }
-        new_data = true;
-    }
-    // else if (codigo == 0x03)
-    // {
-    //     detectado = true;
-    // }
+        /* code */
 
+        if (codigo == 0x01)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                latitud.bytes[i] = Wire.read();
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                longitud.bytes[i] = Wire.read();
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                altura.bytes[i] = Wire.read();
+            }
+            new_data = true;
+        }
+        else if (codigo == 0x02)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                temp_int.bytes[i] = Wire.read();
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                temp_ext.bytes[i] = Wire.read();
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                presion.bytes[i] = Wire.read();
+            }
+            new_data = true;
+        }
+        // else if (codigo == 0x03)
+        // {
+        //     detectado = true;
+        // }
+    }
     else
     {
         while (Wire.available())
@@ -72,7 +76,7 @@ void receive_event(int howMany)
 
 void lightaprs_begin()
 {
-    //Wire.begin(0x04);              // join i2c bus with address #4
+    // Wire.begin(0x04);              // join i2c bus with address #4
     Wire.onReceive(receive_event); // register event
 }
 
