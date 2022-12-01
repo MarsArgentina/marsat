@@ -60,17 +60,10 @@ void receive_event(int howMany)
             }
             new_data = true;
         }
-        else
+        while (Serial2.available())
         {
-            while (Serial2.available())
-            {
-                Serial2.read();
-            }
+            Serial2.read();
         }
-        // else if (codigo == 0x03)
-        // {
-        //     detectado = true;
-        // }
     }
 }
 

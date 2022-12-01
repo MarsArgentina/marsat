@@ -20,13 +20,13 @@
 #define ESP32_ADDR 0x10
 
 // 3 seconds WDT
-#define WDT_TIMEOUT 5
+#define WDT_TIMEOUT 10
 
 #define PERIODO_TX_TMINUS 5000
-#define PERIODO_TX_ASCENSO 60000
-#define PERIODO_TX_DESCENSO 60000
-#define PERIODO_TX_PARACAIDAS 60000
-#define PERIODO_TX_RESCATE 60000
+#define PERIODO_TX_ASCENSO 5000
+#define PERIODO_TX_DESCENSO 5000
+#define PERIODO_TX_PARACAIDAS 5000
+#define PERIODO_TX_RESCATE 5000
 
 #define ALTURA_ASCENSO 1000
 #define ALTURA_PARACAIDAS 10000
@@ -166,12 +166,6 @@ void loop()
     mantenerPayloadsON();
     checkUart();
 
-    int disponible = Serial2.available();
-    if (disponible > 0)
-    {
-      receive_event(disponible);
-    }
-
     if (new_data_available())
     {
       read_last_received(&lightaprs);
@@ -188,6 +182,7 @@ void loop()
     if (lightaprs.altura > ALTURA_ASCENSO)
     {
       estadoVuelo = ascenso;
+      Serial.println("Estado de vuelo: ascenso");
       guardar_estadoVuelo();
     }
 
@@ -221,9 +216,10 @@ void loop()
       abortarVuelo();
     }
 
-    if (lightaprs.altura <= alturaAnterior)
+    if (lightaprs.altura <= (alturaAnterior - 500))
     {
       estadoVuelo = descenso;
+      Serial.println("Estado de vuelo: descenso");
       guardar_estadoVuelo();
     }
     else
@@ -249,18 +245,20 @@ void loop()
       lastmillis = millis();
       Serial.printf("[descenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %f, Temp_ext: %f, Presion: %d\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion);
     }
-    if (lightaprs.altura >= alturaAnterior)
+    if (lightaprs.altura > (alturaAnterior + 500))
     {
       estadoVuelo = ascenso;
+      Serial.println("Estado de vuelo: ascenso");
       guardar_estadoVuelo();
     }
     else
     {
       alturaAnterior = lightaprs.altura;
     }
-    if (lightaprs.altura <= ALTURA_PARACAIDAS)
+    if (lightaprs.altura < ALTURA_PARACAIDAS)
     {
       estadoVuelo = paracaidas;
+      Serial.println("Estado de vuelo: paracaidas");
       guardar_estadoVuelo();
     }
     break;
@@ -285,6 +283,7 @@ void loop()
     if (lightaprs.altura <= ALTURA_ASCENSO)
     {
       estadoVuelo = rescate;
+      Serial.println("Estado de vuelo: rescate");
       guardar_estadoVuelo();
     }
     break;
@@ -323,6 +322,13 @@ void loop()
  */
 void checkUart(void)
 {
+
+  int disponible = Serial2.available();
+  if (disponible > 0)
+  {
+    receive_event(disponible);
+  }
+
   String respuesta;
   if (Serial.available())
   {
@@ -465,7 +471,18 @@ String getDB(void)
   }
   respuestaXtend = Serial.readString();
 
+  // Serial.write("ATPL:4\r"); // configuro a 1W
+  // lastmillis = millis();
+  // while (Serial.available() == 0 && (millis() - lastmillis) < 1000)
+  // { // espera que llegue la respuesta
+  // }
+  // check = Serial.readString();
+
   Serial.write("ATCN\r"); // salgo de modo comandos
+
+  // delay(1000);
+
+  // Serial.println(check);
 
   return respuestaXtend.substring(0, respuestaXtend.length() - 1); // devuelvo la respuesta de los db
 }
