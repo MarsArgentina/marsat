@@ -560,7 +560,7 @@ void updatePosition(int high_precision, char *dao)
 void updateTelemetry()
 {
   // 000/000/A=002397 003 -55.5/-55.5C 100000Pa 8.5V 04S Esto es una prueba - TMSA ar !wAB!\0
-
+  wdt_reset();
   read_temp_ext();
   float tempC = bmp.readTemperature();//-21.4;//
   int32_t pressure = bmp.readPressure(); //Pa 
@@ -625,11 +625,13 @@ void updateTelemetry()
   temp_int.flotante = tempC;
   pres.entero = pressure;
   send_sens_i2c();
+  delay(1000);
+  send_coord_i2c();
 }
 
 void sendLocation()
 {
-
+wdt_reset();
 #if defined(DEVMODE)
   Serial.println(F("Location sending with comment"));
 #endif
@@ -743,10 +745,6 @@ static void updateGpsData(int ms)
   lon.flotante = gps.location.lng();
   alt.flotante = gps.altitude.meters();
 
-  if (gps.location.isValid())
-  {
-    send_coord_i2c();
-  }
 }
 
 float readBatt()
@@ -1169,12 +1167,13 @@ void send_sens_i2c()
 
 void initial_msg_i2c()
 {
-  latt.flotante = -32.652547;
-  lon.flotante = -68.256841;
-  alt.flotante = 817.25;
-  temp_int.flotante = 37.65;
-  temp_ext.flotante = -25.36;
-  pres.entero = 1013;
+  latt.flotante = -11.111111;
+  lon.flotante = -22.222222;
+  alt.flotante = 333.33;
+  temp_int.flotante = 44.44;
+  temp_ext.flotante = -55.55;
+  pres.entero = 777;
   send_coord_i2c();
+  delay(1000);
   send_sens_i2c();
 }
