@@ -26,7 +26,7 @@ typedef union
   uint8_t bytes[4];
 } floatunion_t;
 
-floatunion_t latt, lon, alt, temp_int, temp_ext, pres;
+floatunion_t latt, lon, alt, temp_int, temp_ext, pres, vbat;
 
 #define RfPDPin 19
 #define GpsVccPin 18
@@ -72,7 +72,7 @@ int8_t CallNumber = 11;            // SSID http://www.aprs.org/aprs11/SSIDs.txt
 char Symbol = 'O';                 // '/O' for balloon, '/>' for car, for more info : http://www.aprs.org/symbols/symbols-new.txt
 bool alternateSymbolTable = false; // false = '/' , true = '\'
 
-char comment[171] = "Esto es una prueba - TMSA.ar";    // Max 171 bytes: telemetry_buffer(229) - telemetry_header(52)
+char comment[172] = "Esto es una prueba - TMSA.ar";    // Max 172 bytes: telemetry_buffer(229) - telemetry_header(57)
 char StatusMessage[] = "Esto es una prueba - TMSA ar"; // Se envía solo la primera vez
 //*****************************************************************************
 
@@ -180,6 +180,8 @@ uint16_t tone_delay, tone_spacing;
 volatile bool proceed = false;
 
 boolean HFSent = false;
+
+String vbat_esp;
 
 //*******************************************************************************
 
@@ -559,7 +561,7 @@ void updatePosition(int high_precision, char *dao)
 
 void updateTelemetry()
 {
-  // 000/000/A=002397 003 -55.5/-55.5C 100000Pa 8.5V 04S Esto es una prueba - TMSA ar !wAB!\0
+  // 000/000/A=002397 003 -55.5/-55.5C 100000Pa 8.5/12.6V 04S Esto es una prueba - TMSA ar !wAB!\0
   wdt_reset();
   read_temp_ext();
   float tempC = bmp.readTemperature();//-21.4;//
@@ -598,13 +600,14 @@ void updateTelemetry()
   telemetry_buff[41] = 'a';
   telemetry_buff[42] = ' ';
   dtostrf(readBatt(), 3, 1, telemetry_buff + 43);
-  telemetry_buff[46] = 'V';
-  telemetry_buff[47] = ' ';
-  sprintf(telemetry_buff + 48, "%02d", gps.satellites.isValid() ? (int)gps.satellites.value() : 0);
-  telemetry_buff[50] = 'S';
+  sprintf(telemetry_buff + 46, "%s", vbat_esp);
+  telemetry_buff[50] = 'V';
   telemetry_buff[51] = ' ';
+  sprintf(telemetry_buff + 52, "%02d", gps.satellites.isValid() ? (int)gps.satellites.value() : 0);
+  telemetry_buff[54] = 'S';
+  telemetry_buff[55] = ' ';
 
-  sprintf(telemetry_buff + 52, "%s", comment);   
+  sprintf(telemetry_buff + 56, "%s", comment);   
 
   // APRS PRECISION AND DATUM OPTION http://www.aprs.org/aprs12/datum.txt ; this extension should be added at end of beacon message.
   // We only send this detailed info if it's likely we're interested in, i.e. searching for landing position
@@ -1132,7 +1135,7 @@ void read_temp_ext()
 }
 
 void send_coord_i2c()
-{
+{  
   ESP_Serial.write(0x01);
   for (int i = 0; i < 4; i++)
   {
@@ -1150,6 +1153,7 @@ void send_coord_i2c()
 
 void send_sens_i2c()
 {
+  vbat.flotante = readBatt();
   ESP_Serial.write(0x02);
   for (int i = 0; i < 4; i++)
   {
@@ -1163,6 +1167,11 @@ void send_sens_i2c()
   {
     ESP_Serial.write(pres.bytes[i]);
   }
+  for (int i = 0; i < 4; i++)
+  {
+    ESP_Serial.write(vbat.bytes[i]);
+  }
+  vbat_esp = ESP_Serial.readString();
 }
 
 void initial_msg_i2c()

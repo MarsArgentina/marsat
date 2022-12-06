@@ -33,8 +33,7 @@ typedef union
   uint8_t bytes[4];
 } floatunion_t;
 
-void lightaprs_begin();
-void receive_event(int howMany);
+void receive_event(int howMany, float *vbat_aprs, float vbat_esp);
 void read_last_received(lightaprs_t *lightaprs);
 bool new_data_available();
 // bool lightaprs_detected();

@@ -11,11 +11,11 @@
 
 #include "lightaprs.hpp"
 
-floatunion_t latitud, longitud, altura, temp_int, temp_ext, presion;
+floatunion_t latitud, longitud, altura, temp_int, temp_ext, presion, vbat;
 
 bool new_data = false, detectado = false;
 
-void receive_event(int howMany)
+void receive_event(int howMany, float *vbat_aprs, float vbat_esp)
 {
     int16_t ret;
     byte codigo = Serial2.read();
@@ -58,6 +58,12 @@ void receive_event(int howMany)
             {
                 presion.bytes[i] = Serial2.read();
             }
+            for (int i = 0; i < 4; i++)
+            {
+                vbat.bytes[i] = Serial2.read();
+            }
+            *vbat_aprs = vbat.number;
+            Serial2.print(vbat_esp);
             new_data = true;
         }
         while (Serial2.available())
