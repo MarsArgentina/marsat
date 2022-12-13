@@ -181,7 +181,7 @@ volatile bool proceed = false;
 
 boolean HFSent = false;
 
-String vbat_esp;
+float vbat_esp;
 
 //*******************************************************************************
 
@@ -600,14 +600,15 @@ void updateTelemetry()
   telemetry_buff[41] = 'a';
   telemetry_buff[42] = ' ';
   dtostrf(readBatt(), 3, 1, telemetry_buff + 43);
-  sprintf(telemetry_buff + 46, "%s", vbat_esp);
-  telemetry_buff[50] = 'V';
-  telemetry_buff[51] = ' ';
-  sprintf(telemetry_buff + 52, "%02d", gps.satellites.isValid() ? (int)gps.satellites.value() : 0);
-  telemetry_buff[54] = 'S';
-  telemetry_buff[55] = ' ';
+  telemetry_buff[46] = '/';
+  dtostrf(vbat_esp, 3, 1, telemetry_buff + 47);
+  telemetry_buff[51] = 'V';
+  telemetry_buff[52] = ' ';
+  sprintf(telemetry_buff + 53, "%02d", gps.satellites.isValid() ? (int)gps.satellites.value() : 0);
+  telemetry_buff[55] = 'S';
+  telemetry_buff[56] = ' ';
 
-  sprintf(telemetry_buff + 56, "%s", comment);   
+  sprintf(telemetry_buff + 57, "%s", comment);   
 
   // APRS PRECISION AND DATUM OPTION http://www.aprs.org/aprs12/datum.txt ; this extension should be added at end of beacon message.
   // We only send this detailed info if it's likely we're interested in, i.e. searching for landing position
@@ -1171,7 +1172,7 @@ void send_sens_i2c()
   {
     ESP_Serial.write(vbat.bytes[i]);
   }
-  vbat_esp = ESP_Serial.readString();
+  vbat_esp = atof(ESP_Serial.readString().c_str());
 }
 
 void initial_msg_i2c()
