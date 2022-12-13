@@ -11,71 +11,49 @@ typedef union
 
 floatunion_t latt, lon, alt, temp_int, temp_ext, pres, vbat;
 
-
 SoftwareSerial ESP_Serial(ESP32_RX, ESP32_TX); // RX, TX
 
-void setup() {
+String serial0data;
+
+void setup()
+{
   // put your setup code here, to run once:
   Serial.begin(9600);
   ESP_Serial.begin(9600);
   initial_msg_i2c();
 }
 
-void loop() {
+void loop()
+{
   // put your main code here, to run repeatedly:
   if (Serial.available() > 0)
   {
-    int a = Serial.read();
-    switch (a) {
-      case 0: tminus();
-        break;
-      case 1: ascenso();
-        break;
-      case 2: descenso();
-        break;
-      case 3: paracaidas();
-        break;
-      case 4: rescate();
-        break;
-      case 5: fuera();
-        break;
-      default:
-        while (Serial.available()) {
-          Serial.read();
-        };
-        break;
+    serial0data = Serial.readString();
+    if (serial0data.indexOf("altura: ") >= 0)
+    {
+      alt.flotante = serial0data.substring(8).toFloat();
+      Serial.print("Altura: ");
+      Serial.println(alt.flotante, 6);
+      //Serial.printf("Altura: %f\r\n", alt.flotante);
+      send_coord_i2c();
+    }
+    else if (serial0data.indexOf("latitud: ") >= 0)
+    {
+      latt.flotante = serial0data.substring(9).toFloat();
+      Serial.print("Latitud: ");
+      Serial.println(latt.flotante, 6);
+      //Serial.printf("Latitud: %f\r\n", latt.flotante);
+      send_coord_i2c();
+    }
+    else if (serial0data.indexOf("longitud: ") >= 0)
+    {
+      lon.flotante = serial0data.substring(10).toFloat();
+      Serial.print("Longitud: ");
+      Serial.println(lon.flotante, 6);
+      //Serial.printf("Longitud: %f\r\n", lon.flotante);
+      send_coord_i2c();
     }
   }
-}
-
-void tminus()
-{
-  
-}
-
-void ascenso()
-{
-  
-}
-
-void descenso()
-{
-  
-}
-
-void paracaidas()
-{
-  
-}
-
-void rescate()
-{
-  
-}
-
-void fuera()
-{
-  
 }
 
 void initial_msg_i2c()
