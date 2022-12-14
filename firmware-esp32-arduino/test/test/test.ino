@@ -1,6 +1,6 @@
 #include <SoftwareSerial.h>
-#define ESP32_RX 6
-#define ESP32_TX 5
+#define ESP32_RX D3
+#define ESP32_TX D2
 
 typedef union
 {
@@ -11,7 +11,7 @@ typedef union
 
 floatunion_t latt, lon, alt, temp_int, temp_ext, pres, vbat;
 
-SoftwareSerial ESP_Serial(ESP32_RX, ESP32_TX); // RX, TX
+SoftwareSerial ESP_Serial(11, 12); // RX, TX
 
 String serial0data;
 
@@ -20,6 +20,7 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(9600);
   ESP_Serial.begin(9600);
+  //ESP_Serial.println("hola");
   initial_msg_i2c();
 }
 

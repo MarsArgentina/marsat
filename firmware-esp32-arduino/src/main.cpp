@@ -95,10 +95,13 @@ lightaprs_t lightaprs;
 
 uint8_t reintento_payload1, reintento_payload2;
 
+bool once = true;
+
 // temporizadores
 
 uint32_t lastKAtime = 0;
 uint32_t lastmillis = 0;
+uint32_t lastmillis_nicrom = 0;
 
 float vbat_esp, vbat_aprs;
 
@@ -106,7 +109,7 @@ float vbat_esp, vbat_aprs;
 uint32_t getDistance(float flat1, float flon1, float flat2, float flon2); // calcula la distancia del gps respecto a las cooredenadas actuales
 void checkUart(void);                                                     // reivsa los puertos uart
 String getDB(void);                                                       // pregunta al módulo de comunicaciones los dbs de recepcción
-void abortarVuelo(void);
+void abortarVuelo(int pwm);
 void apagar_nicrom(void);
 bool estadoPayload1(void);
 bool estadoPayload2(void);
@@ -120,6 +123,7 @@ void apagarPayload2(void);
 void desactivar_paracaidas(void);
 void activar_paracaidas(void);
 float tensionBateria(void);
+void guardar_coord_iniciales(void);
 
 void setup()
 {
@@ -164,6 +168,7 @@ void setup()
 
 void loop()
 {
+  static int pwm = 30;
   switch (estadoVuelo)
   {
   case t_minus:
@@ -176,6 +181,7 @@ void loop()
       read_last_received(&lightaprs);
       latitudInicial = lightaprs.latitud;
       longitudInicial = lightaprs.longitud;
+      guardar_coord_iniciales();
     }
 
     if ((millis() - lastmillis) > PERIODO_TX_TMINUS)
@@ -184,7 +190,7 @@ void loop()
       Serial.printf("[t-minus] Lat: %f, Lon: %f, Alt: %f, Temp_int: %.2f, Temp_ext: %.2f, Presion: %d, VBat_esp: %.2f, Vbat_aprs: %.2f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion, vbat_esp, vbat_aprs);
     }
 
-    if (lightaprs.altura > ALTURA_ASCENSO)
+    if (lightaprs.altura > ALTURA_ASCENSO && lightaprs.altura > 0)
     {
       alturaAnterior = lightaprs.altura;
       estadoVuelo = ascenso;
@@ -209,11 +215,26 @@ void loop()
       lastmillis = millis();
       Serial.printf("[ascenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %.2f, Temp_ext: %.2f, Presion: %d, VBat_esp: %.2f, Vbat_aprs: %.2f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion, vbat_esp, vbat_aprs);
     }
-
-    if (getDistance(latitudInicial, longitudInicial, lightaprs.latitud, lightaprs.longitud) > distanciaMaxima)
+    if (lightaprs.latitud < 0 && lightaprs.longitud < 0)
     {
-      Serial.println("Limite superado - Vuelo abortado");
-      abortarVuelo();
+      if (getDistance(latitudInicial, longitudInicial, lightaprs.latitud, lightaprs.longitud) > distanciaMaxima)
+      {
+        if (once)
+        {
+          Serial.println("Limite superado - Vuelo abortado");
+          once = false;
+        }
+        if ((millis() - lastmillis_nicrom) > 5000)
+        {
+          Serial.print("nicrom: ");
+          Serial.println(pwm);
+          abortarVuelo(pwm);
+          pwm += 10;
+          if (pwm > 255)
+            pwm = 255;
+          lastmillis_nicrom = millis();
+        }
+      }
     }
 
     // if (lightaprs.altura < ALTURA_MAX_VUELOS_COMERCIALES && (millis() - lastKAtime) > TIEMPO_MAX_SIN_KA)
@@ -222,12 +243,14 @@ void loop()
     //   abortarVuelo();
     // }
 
-    if (lightaprs.altura <= (alturaAnterior - 500))
+    if (lightaprs.altura <= (alturaAnterior - 500) && lightaprs.altura > 0)
     {
       alturaAnterior = lightaprs.altura;
       estadoVuelo = descenso;
       Serial.println("Estado de vuelo: descenso");
       guardar_estadoVuelo();
+      once = true;
+      pwm = 30;
     }
     else
     {
@@ -252,14 +275,14 @@ void loop()
       lastmillis = millis();
       Serial.printf("[descenso] Lat: %f, Lon: %f, Alt: %f, Temp_int: %.2f, Temp_ext: %.2f, Presion: %d, VBat_esp: %.2f, Vbat_aprs: %.2f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion, vbat_esp, vbat_aprs);
     }
-    if (lightaprs.altura > (alturaAnterior + 500))
+    if (lightaprs.altura > (alturaAnterior + 500) && lightaprs.altura > 0)
     {
       alturaAnterior = lightaprs.altura;
       estadoVuelo = ascenso;
       Serial.println("Estado de vuelo: ascenso");
       guardar_estadoVuelo();
     }
-    else if (lightaprs.altura < ALTURA_PARACAIDAS)
+    else if (lightaprs.altura < ALTURA_PARACAIDAS && lightaprs.altura > 0)
     {
       alturaAnterior = lightaprs.altura;
       estadoVuelo = paracaidas;
@@ -290,14 +313,14 @@ void loop()
       lastmillis = millis();
       Serial.printf("[paracaidas] Lat: %f, Lon: %f, Alt: %f, Temp_int: %.2f, Temp_ext: %.2f, Presion: %d, VBat_esp: %.2f, Vbat_aprs: %.2f\r\n", lightaprs.latitud, lightaprs.longitud, lightaprs.altura, lightaprs.temp_int, lightaprs.temp_ext, lightaprs.presion, vbat_esp, vbat_aprs);
     }
-    if (lightaprs.altura > (alturaAnterior + 500))
+    if (lightaprs.altura > (alturaAnterior + 500) && lightaprs.altura > 0)
     {
       alturaAnterior = lightaprs.altura;
       estadoVuelo = ascenso;
       Serial.println("Estado de vuelo: ascenso");
       guardar_estadoVuelo();
     }
-    else if (lightaprs.altura <= ALTURA_ASCENSO)
+    else if (lightaprs.altura <= ALTURA_ASCENSO && lightaprs.altura > 0)
     {
       estadoVuelo = rescate;
       Serial.println("Estado de vuelo: rescate");
@@ -369,7 +392,7 @@ void checkUart(void)
     }
     else if (serial0data == "abort")
     {
-      abortarVuelo();
+      abortarVuelo(255);
       Serial.println("abortACK");
     }
     else if (serial0data.indexOf("nicromON: ") >= 0)
@@ -378,7 +401,7 @@ void checkUart(void)
       if (pwm >= 0 && pwm < 256)
       {
         Serial.printf("PWM: %d\r\n", pwm);
-        analogWrite(NICROM_PIN, pwm);
+        abortarVuelo(pwm);
       }
     }
     else if (serial0data == "abortOFF")
@@ -448,6 +471,12 @@ void checkUart(void)
     {
       longitudInicial = serial0data.substring(17).toFloat();
       Serial.printf("longitudInicialACK: %f\r\n", longitudInicial);
+    }
+    else if (serial0data.indexOf("estadoVuelo: ") >= 0)
+    {
+      estadoVuelo = serial0data.substring(13).toInt();
+      Serial.printf("estadoVueloACK: %d\r\n", estadoVuelo);
+      guardar_estadoVuelo();
     }
     else if (serial0data == "restart")
     {
@@ -568,16 +597,18 @@ uint32_t getDistance(float flat1, float flon1, float flat2, float flon2)
   return (uint32_t)dist_calc;
 }
 
-void abortarVuelo(void)
+void abortarVuelo(int pwm)
 {
   // digitalWrite(NICROM_PIN, HIGH);
-  analogWrite(NICROM_PIN, 255);
+  analogWrite(NICROM_PIN, pwm);
+  analogWrite(PARACHUTE_PIN, pwm);
 }
 
 void apagar_nicrom(void)
 {
   // digitalWrite(NICROM_PIN, LOW);
   analogWrite(NICROM_PIN, 0);
+  analogWrite(PARACHUTE_PIN, 0);
 }
 
 void activar_paracaidas(void)
@@ -670,5 +701,13 @@ void guardar_estadoVuelo(void)
 {
   memoria.begin("vuelo", false);
   memoria.putUChar("estadoVuelo", estadoVuelo);
+  memoria.end();
+}
+
+void guardar_coord_iniciales(void)
+{
+  memoria.begin("vuelo", false);
+  memoria.putFloat("latitud", latitudInicial);
+  memoria.putFloat("longitud", longitudInicial);
   memoria.end();
 }
