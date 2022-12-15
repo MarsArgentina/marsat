@@ -248,7 +248,8 @@ void setup()
   bmp.begin();
   sensorDS18B20.begin();
   ESP_Serial.begin(9600);
-  initial_msg_i2c();
+  //initial_msg_i2c();
+  ESP_Serial.setTimeout(5000);
 }
 
 void loop()
@@ -1154,6 +1155,10 @@ void send_coord_i2c()
 
 void send_sens_i2c()
 {
+  while(ESP_Serial.avaliable() > 0)
+  {
+    ESP_Serial.read();
+  }
   vbat.flotante = readBatt();
   ESP_Serial.write(0x02);
   for (int i = 0; i < 4; i++)
