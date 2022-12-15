@@ -63,7 +63,7 @@ void receive_event(int howMany, float *vbat_aprs, float vbat_esp)
                 vbat.bytes[i] = Serial2.read();
             }
             *vbat_aprs = vbat.number;
-            Serial2.print(vbat_esp);
+            Serial2.print(String(vbat_esp));
             new_data = true;
         }
         while (Serial2.available())
